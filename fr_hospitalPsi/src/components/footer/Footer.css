@@ -1,0 +1,22 @@
+.footer {
+    width: 100%;
+    background: #f1f6ff;
+    padding: 25px;
+    text-align: center;
+    margin-top: 40px;
+    border-top: 2px solid #dbe7ff;
+}
+
+.footer-text {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #444;
+    max-width: 700px;
+    margin: 0 auto 15px auto;
+}
+
+.footer-copy {
+    font-size: 14px;
+    color: #666;
+    opacity: 0.8;
+}
