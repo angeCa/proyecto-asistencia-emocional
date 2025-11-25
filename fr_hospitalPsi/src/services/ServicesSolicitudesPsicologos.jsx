@@ -16,7 +16,9 @@ async function getSolicitudes() {
 
 async function aprobarSolicitud(id) {
     const response = await fetch(`http://127.0.0.1:8000/api/solicitud/${id}/aprobar/`,
-        { method: "POST" });
+        { method: "POST",
+          headers: { "Content-Type": "application/json" }
+         });
     return await response.json();
 }
 

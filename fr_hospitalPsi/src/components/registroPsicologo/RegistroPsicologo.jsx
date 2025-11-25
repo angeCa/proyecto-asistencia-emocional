@@ -1,5 +1,9 @@
 import React, { useState } from "react";
 import Swal from "sweetalert2";
+import NavBar from "../navbar/NavBar";
+//import './Registropsicologia.css'
+import Footer from "../footer/Footer";
+import fondo from "../img/RPsicologia.png";
 import ServicesSolicitudesPsicologos from "../../services/ServicesSolicitudesPsicologos";
 
 function RegistroPsicologo() {
@@ -40,7 +44,7 @@ function RegistroPsicologo() {
       Swal.fire("Enviado", "Tu solicitud fue enviada al administrador", "success");
 
       setNombre("");
-       setApellido(""); setCorreo("");
+      setApellido(""); setCorreo("");
       setTelefono(""); setDireccion(""); setEspecialidad("");
       setTitulo(""); setCv(null);
     } catch (error) {
@@ -49,22 +53,37 @@ function RegistroPsicologo() {
     }
   };
 
-  return (
-    <div className="registro-psicologo">
-      <h1>Registro de Psicólogo</h1>
-      <form onSubmit={handleSubmit}>
-        <input placeholder="Nombre" value={nombre} onChange={e => setNombre(e.target.value)} />
-        <input placeholder="Apellido" value={apellido} onChange={e => setApellido(e.target.value)} />
-        <input placeholder="Correo" value={correo} onChange={e => setCorreo(e.target.value)} />
-        <input placeholder="Teléfono" value={telefono} onChange={e => setTelefono(e.target.value)} />
-        <input placeholder="Dirección" value={direccion} onChange={e => setDireccion(e.target.value)} />
-        <input placeholder="Especialidad" value={especialidad} onChange={e => setEspecialidad(e.target.value)} />
-        <input placeholder="Título" value={titulo} onChange={e => setTitulo(e.target.value)} />
-        <input type="file" accept=".pdf" onChange={e => setCv(e.target.files[0])} />
-        <button type="submit">Enviar solicitud</button>
-      </form>
+   return (
+    <div>
+      <NavBar />
+
+      {/* Fondo con imagen importada */}
+      <div 
+        className="registro-psicologo-container"
+        //style={{ backgroundImage: `url(${fondo})` }}
+      >
+        <div className="registro-psicologo">
+          <h1>Registro de Psicólogo</h1>
+          <form onSubmit={handleSubmit}>
+
+            <input placeholder="Nombre" value={nombre} onChange={e => setNombre(e.target.value)} />
+            <input placeholder="Apellido" value={apellido} onChange={e => setApellido(e.target.value)} />
+            <input placeholder="Correo" value={correo} onChange={e => setCorreo(e.target.value)} />
+            <input placeholder="Teléfono" value={telefono} onChange={e => setTelefono(e.target.value)} />
+            <input placeholder="Dirección" value={direccion} onChange={e => setDireccion(e.target.value)} />
+            <input placeholder="Especialidad" value={especialidad} onChange={e => setEspecialidad(e.target.value)} />
+            <input placeholder="Título" value={titulo} onChange={e => setTitulo(e.target.value)} />
+            <input type="file" accept=".pdf" onChange={e => setCv(e.target.files[0])} />
+
+            <button type="submit">Enviar solicitud</button>
+          </form>
+        </div>
+      </div>
+
+      <Footer />
     </div>
   );
+
 }
 
 export default RegistroPsicologo;

@@ -1,5 +1,6 @@
 from rest_framework import generics
 from .models import *
+from django.contrib.auth.models import Group
 from .serializers import *
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -8,13 +9,14 @@ from rest_framework import generics, permissions
 from rest_framework_simplejwt.views import TokenObtainPairView
 import cloudinary.uploader
 from rest_framework.parsers import MultiPartParser, FormParser
+import uuid
 
 cloudinary.config(
-    cloud_name="dbldhwogm",
-    api_key="593543857674241",
-    api_secret="ENAnveNodGPZUfEeVaSJQRZk9nA",
+    cloud_name="dl9nspeal",
+    api_key="882573151299831",
+    api_secret="Dwf9s79bs2riAxquwoXyw0THGAE",
+    secure=True
 )
-
 
 
 class SolicitudPsicologoListCreateView(generics.ListCreateAPIView):
@@ -37,13 +39,14 @@ class SolicitudPsicologoListCreateView(generics.ListCreateAPIView):
         cv_url = None
 
         if cv_file:
+            print(cv_file.content_type)
             upload_result = cloudinary.uploader.upload_large(
                 cv_file.file,
                 folder="solicitudes_cv",
                 resource_type="raw",
-                public_id=f"cv_{uuid.uuid4()}.pdf",
+                public_id=f"cv_{uuid.uuid4()}",
                 format="pdf"
-                )
+            )
             print(upload_result)
             cv_url = upload_result.get("secure_url")
 
@@ -58,14 +61,15 @@ class SolicitudPsicologoListCreateView(generics.ListCreateAPIView):
             cv_url = upload_result.get("secure_url") or ""
         serializer.save(cv=cv_url) """
 
+
 class AprobarSolicitudAPIView(APIView):
     def post(self, request, solicitud_id):
         try:
             solicitud = SolicitudPsicologo.objects.get(id=solicitud_id)
         except SolicitudPsicologo.DoesNotExist:
-            return Response({"error": "Solicitud no encontrada"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Solicitud no encontrada"}, status=404)
 
-        # Crear el usuario
+        # Crear usuario
         usuario = Usuario.objects.create_user(
             username=solicitud.correo,
             email=solicitud.correo,
@@ -76,7 +80,15 @@ class AprobarSolicitudAPIView(APIView):
             last_name=solicitud.apellido,
         )
 
-        # Crear el psicólogo profesional
+        # 🔹 Agregar usuario al grupo correcto
+        try:
+            grupo = Group.objects.get(name__iexact="psicologo")
+
+            usuario.groups.add(grupo)
+        except Group.DoesNotExist:
+            print("⚠ ERROR: El grupo 'Psicologo' NO existe en la base de datos")
+
+        # 🔹 Crear el registro de psicólogo
         Psicologo.objects.create(
             usuario=usuario,
             especialidad=solicitud.especialidad,
@@ -85,12 +97,10 @@ class AprobarSolicitudAPIView(APIView):
             estado="aprobado"
         )
 
-        # Marcar solicitud como aprobada
         solicitud.estado = "aprobado"
         solicitud.save()
 
-        return Response({"message": "Solicitud aprobada con éxito"}, status=status.HTTP_200_OK)
-
+        return Response({"message": "Solicitud aprobada con éxito"}, status=200)
 
 
 class RechazarSolicitudAPIView(APIView):
@@ -149,6 +159,7 @@ class PacienteRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 class PsicologoListCreateView(generics.ListCreateAPIView):
     queryset = Psicologo.objects.all()
     serializer_class = PsicologoSerializer
+    
 
 
 class PsicologoRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):

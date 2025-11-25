@@ -26,11 +26,10 @@ class SolicitudPsicologo(models.Model):
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
     correo = models.EmailField()
-    telefono = models.CharField(max_length=20)
-    direccion = models.CharField(max_length=200, blank=True, null=True)
+    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, null=True)
     especialidad = models.CharField(max_length=100)
     titulo = models.CharField(max_length=200)
-    cv = models.TextField(max_length=250)  # Guardamos URL de Cloudinary
+    cv = models.TextField(max_length=1024, blank=True, null=True) # Guardamos URL de Cloudinary
     estado = models.CharField(
         max_length=20,
         choices=[("pendiente", "Pendiente"), ("aprobado", "Aprobado"), ("rechazado", "Rechazado")],

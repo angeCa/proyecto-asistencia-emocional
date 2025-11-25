@@ -104,13 +104,24 @@ class NotificacionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Guardar el rol dentro del token
+        groups = user.groups.values_list('name', flat=True)
+        token['role'] = groups[0] if groups else None
+
+        return token
+
     def validate(self, attrs):
         data = super().validate(attrs)
-        # Obtener el grupo del usuario (rol)
+
+        # Incluir también en la respuesta del login
         groups = self.user.groups.values_list('name', flat=True)
-        user = self.user.groups.values_list('name', flat=True)
-        # Agrega el primer grupo como 'role'
         data['role'] = groups[0] if groups else None
         data['id'] = self.user.id
-        print(data)
+
         return data
+

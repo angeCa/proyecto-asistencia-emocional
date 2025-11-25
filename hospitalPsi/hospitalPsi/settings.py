@@ -155,9 +155,10 @@ REST_FRAMEWORK = {
 import cloudinary
 
 cloudinary.config(
-    cloud_name="dbldhwogm",
-    api_key="593543857674241",
-    api_secret="ENAnveNodGPZUfEeVaSJQRZk9nA",
+    cloud_name="dl9nspeal",
+    api_key="882573151299831",
+    api_secret="Dwf9s79bs2riAxquwoXyw0THGAE",
+    secure = True
 )
 
 
