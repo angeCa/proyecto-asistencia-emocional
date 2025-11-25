@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 
-
 class Usuario(AbstractUser):
     telefono = models.CharField(max_length=20, blank=False, null=False)
     direccion = models.CharField(max_length=200, blank=True, null=True)
@@ -22,22 +21,25 @@ class Paciente(models.Model):
         return f"Paciente: {self.usuario}"
 
 # 🧠 4 Solicitud de psicolgo
+
+
 class SolicitudPsicologo(models.Model):
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
     correo = models.EmailField()
-    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, null=True)
+    telefono = models.CharField(max_length=50, null=True)
+    usuario = models.OneToOneField(
+        Usuario, on_delete=models.CASCADE, null=True)
     especialidad = models.CharField(max_length=100)
     titulo = models.CharField(max_length=200)
-    cv = models.TextField(max_length=1024, blank=True, null=True) # Guardamos URL de Cloudinary
+    cv = models.TextField(blank=True, null=True)  # Guardamos URL de Cloudinary
     estado = models.CharField(
         max_length=20,
-        choices=[("pendiente", "Pendiente"), ("aprobado", "Aprobado"), ("rechazado", "Rechazado")],
+        choices=[("pendiente", "Pendiente"), ("aprobado",
+                                              "Aprobado"), ("rechazado", "Rechazado")],
         default="pendiente"
     )
     fecha_envio = models.DateTimeField(auto_now_add=True)
-
-
 
 
 # 🧠 4.5 Psicólogo
@@ -47,10 +49,10 @@ class Psicologo(models.Model):
         on_delete=models.CASCADE,
         related_name='psicologo'
     )
-    
+
     especialidad = models.CharField(max_length=100)
     titulo = models.CharField(max_length=200)
-    cv = models.FileField(upload_to='cv_psicologos/', blank=True, null=True)
+    cv = models.TextField(blank=True, null=True)
 
     estado = models.CharField(
         max_length=20,
@@ -63,9 +65,12 @@ class Psicologo(models.Model):
     )
 
     def __str__(self):
-        return f"Psicólogo {self.usuario.username} - {self.estado}"
+        return f"{self.usuario.first_name} {self.usuario.email} - {self.usuario.telefono} - {self.estado}"
+
 
 # 💬 5. Consulta
+
+
 class Consulta(models.Model):
     paciente = models.ForeignKey(
         Paciente, on_delete=models.CASCADE, related_name="consultas")
@@ -94,15 +99,17 @@ class Consulta(models.Model):
 
 # 💌 6. Mensaje
 class Mensaje(models.Model):
-    consulta = models.ForeignKey(
-        Consulta, on_delete=models.CASCADE, related_name="mensajes")
     remitente = models.ForeignKey(
-        Usuario, on_delete=models.CASCADE, related_name="mensajes_enviados")
-    contenido = models.TextField(blank=False, null=False)
+        Usuario, on_delete=models.CASCADE, related_name="mensajes_enviados"
+    )
+    destinatario = models.ForeignKey(
+        # permite que sea vacío
+    Usuario, on_delete=models.CASCADE, related_name="mensajes_recibidos", null=True, blank=True )
+    contenido = models.TextField()
     fecha_envio = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Mensaje de {self.remitente} en consulta {self.consulta}"
+        return f"Mensaje de {self.remitente} para {self.destinatario}"
 
 
 # 📔 7. Diario Emocional

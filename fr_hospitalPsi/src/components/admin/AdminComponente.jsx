@@ -5,93 +5,112 @@ import ServicesPsicologos from "../../services/ServicesPsicologo";
 import Swal from "sweetalert2";
 import NavBar from "../navbar/NavBar";
 import Footer from "../footer/Footer";
-import "./AdminComponente.css"; // Opcional, para estilos tipo dashboard
-import descargar from './Prueba'
+import "./AdminComponente.css";
 
 export default function AdminComponente() {
   const [solicitudes, setSolicitudes] = useState([]);
   const [psicologos, setPsicologos] = useState([]);
 
-
   const pendientes = solicitudes.filter(s => s.estado === "pendiente");
-  const aprobados = solicitudes.filter(s => s.estado === "aprobado");
   const rechazados = solicitudes.filter(s => s.estado === "rechazado");
 
+  // Cargar datos
+  const cargarSolicitudes = async () => {
+    try {
+      const data = await ServicesSolicitudesPsicologos.getSolicitudes();
+      setSolicitudes(data);
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Error", "No se pudieron cargar las solicitudes", "error");
+    }
+  };
 
-  // Cargar solicitudes al iniciar
+  const cargarPsicologos = async () => {
+    try {
+      const data = await ServicesPsicologos.getPsicologos();
+      setPsicologos(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
-    const cargarSolicitudes = async () => {
-      try {
-        const data = await ServicesSolicitudesPsicologos.getSolicitudes();
-        console.log(data)
-        setSolicitudes(data);
-      } catch (error) {
-        console.error(error);
-        Swal.fire("Error", "No se pudieron cargar las solicitudes", "error");
-      }
-    };
     cargarSolicitudes();
-
-    const cargarPsicologos = async () => {
-      try {
-        const data = await ServicesPsicologos.getPsicologos();
-        setPsicologos(data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
     cargarPsicologos();
-
-
   }, []);
 
-  // Aprobar 
-const aprobarSolicitud = async (id) => {
-  try {
-    await ServicesSolicitudesPsicologos.aprobarSolicitud(id);
+  // APROBAR
+  const aprobarSolicitud = async (id) => {
+    try {
+      await ServicesSolicitudesPsicologos.aprobarSolicitud(id);
 
-    Swal.fire("Aprobado", "Solicitud aprobada correctamente", "success");
+      Swal.fire("Aprobado", "Solicitud aprobada correctamente", "success");
 
-    // 1. Eliminamos de pendientes
-    setSolicitudes(prev => prev.filter(s => s.id !== id));
+      await cargarSolicitudes();
+      await cargarPsicologos();
 
-    // 2. RECARGAMOS PSICÓLOGOS DESDE LA API
-    const data = await ServicesPsicologos.getPsicologos();
-    setPsicologos(data);
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Error", "No se pudo aprobar la solicitud", "error");
+    }
+  };
 
-  } catch (error) {
-    console.error(error);
-    Swal.fire("Error", "No se pudo aprobar la solicitud", "error");
-  }
-};
-
-
-  // Rechazar 
+  // RECHAZAR
   const rechazarSolicitud = async (id) => {
     try {
       await ServicesSolicitudesPsicologos.rechazarSolicitud(id);
+
       Swal.fire("Rechazado", "Solicitud rechazada", "info");
-      setSolicitudes(prev => prev.filter(s => s.id !== id));
+
+      await cargarSolicitudes();
+
     } catch (error) {
       console.error(error);
       Swal.fire("Error", "No se pudo rechazar la solicitud", "error");
     }
   };
 
-  //Editar 
-  const editarPsicologo = (id) => {
-    Swal.fire("Editar", `Editar psicólogo ${id}`, "info");
-  };
-  //eliminar
-  const eliminarPsicologo = (id) => {
-    Swal.fire("Eliminar", `Psicólogo ${id} eliminado`, "warning");
-  };
+
+
+  // ELIMINAR
+const eliminarPsicologo = async (id) => {
+
+  const confirm = await Swal.fire({
+    title: "¿Eliminar psicólogo?",
+    text: "Esta acción no se puede deshacer",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Sí, eliminar",
+    cancelButtonText: "Cancelar"
+  });
+
+  // 🔴 Si NO confirma, no hacemos nada
+  if (!confirm.isConfirmed) return;
+
+  // 🟢 Ocultar en pantalla
+  setPsicologos(prev => prev.filter(ps => ps.id !== id));
+
+  try {
+    const ok = await ServicesPsicologos.deletePsicologo(id);
+
+    if (ok) {
+      Swal.fire("Eliminado", "Psicólogo eliminado", "success");
+      cargarPsicologos();
+    } else {
+      Swal.fire("Error", "No se pudo eliminar", "error");
+    }
+
+  } catch (error) {
+    Swal.fire("Error", "No se pudo eliminar", "error");
+  }
+};
+
+
 
   return (
-
-
     <div>
       <div className="NavBar"><NavBar /></div>
+
       <div className="DivGeneral">
         <div className="AdminSolicitudes">
           <h1>Solicitudes de Psicólogos</h1>
@@ -128,7 +147,6 @@ const aprobarSolicitud = async (id) => {
             </div>
           )}
 
-
           {/* Aprobados */}
           <h2>✔ Aprobados</h2>
           {psicologos.length === 0 ? (
@@ -150,14 +168,12 @@ const aprobarSolicitud = async (id) => {
                   )}
 
                   <div className="acciones">
-                    <button className="btn-edit" onClick={() => editarPsicologo(p.id)}>Editar</button>
                     <button className="btn-delete" onClick={() => eliminarPsicologo(p.id)}>Eliminar usuario</button>
                   </div>
                 </div>
               ))}
             </div>
           )}
-
 
           {/* Rechazados */}
           <h2>❌ Rechazados</h2>
@@ -171,16 +187,10 @@ const aprobarSolicitud = async (id) => {
                   <p><strong>Correo:</strong> {s.correo}</p>
                   <p><strong>Teléfono:</strong> {s.telefono}</p>
 
-
                   {s.cv && (
                     <p>
                       <strong>CV:</strong>{" "}
-                      <a
-                        href={`${s.cv}${s.cv_name ? '.' + s.cv_name.split('.').pop() : ''}`}
-                        download={s.cv_name || "cv.pdf"}
-                      >
-                        Ver CV
-                      </a>
+                      <a href={s.cv} download>Ver CV</a>
                     </p>
                   )}
                 </div>
@@ -189,9 +199,8 @@ const aprobarSolicitud = async (id) => {
           )}
         </div>
       </div>
+
       <div className="Footer"><Footer /></div>
     </div>
-
-
   );
 }

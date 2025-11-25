@@ -3,6 +3,7 @@ from .models import *
 from django.contrib.auth.models import Group
 from .serializers import *
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import generics, permissions
@@ -52,15 +53,6 @@ class SolicitudPsicologoListCreateView(generics.ListCreateAPIView):
 
         serializer.save(cv=cv_url)
 
-    """ def perform_create(self, serializer):
-        print(self.request.data)  
-        cv_file = self.request.FILES.get("cv")
-        cv_url = ""  # siempre string
-        if cv_file:
-            upload_result = cloudinary.uploader.upload(cv_file, folder="solicitudes_cv")
-            cv_url = upload_result.get("secure_url") or ""
-        serializer.save(cv=cv_url) """
-
 
 class AprobarSolicitudAPIView(APIView):
     def post(self, request, solicitud_id):
@@ -70,14 +62,14 @@ class AprobarSolicitudAPIView(APIView):
             return Response({"error": "Solicitud no encontrada"}, status=404)
 
         # Crear usuario
-        usuario = Usuario.objects.create_user(
+        usuario, created = Usuario.objects.get_or_create(
             username=solicitud.correo,
-            email=solicitud.correo,
-            password="contraseña123",
-            telefono=solicitud.telefono,
-            direccion=solicitud.direccion,
-            first_name=solicitud.nombre,
-            last_name=solicitud.apellido,
+            defaults={
+                "email": solicitud.correo,
+                "first_name": solicitud.nombre,
+                "last_name": solicitud.apellido,
+                "password": "ContraTemporal123",
+            }
         )
 
         # 🔹 Agregar usuario al grupo correcto
@@ -148,6 +140,9 @@ class PacienteListCreateView(generics.ListCreateAPIView):
     queryset = Paciente.objects.all()
     serializer_class = PacienteSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(paciente=self.request.user)
+
 
 class PacienteRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Paciente.objects.all()
@@ -159,7 +154,6 @@ class PacienteRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 class PsicologoListCreateView(generics.ListCreateAPIView):
     queryset = Psicologo.objects.all()
     serializer_class = PsicologoSerializer
-    
 
 
 class PsicologoRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -170,24 +164,34 @@ class PsicologoRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class ConsultaListCreateView(generics.ListCreateAPIView):
-    queryset = Consulta.objects.all()
     serializer_class = ConsultaSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Consulta.objects.filter(paciente=user)
+
+    def perform_create(self, serializer):
+        serializer.save(paciente=self.request.user)
 
 
 class ConsultaRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Consulta.objects.all()
     serializer_class = ConsultaSerializer
+    permission_classes = [IsAuthenticated]
 
 # 💌 Mensaje
 
 
 class MensajeListCreateView(generics.ListCreateAPIView):
+    queryset = Mensaje.objects.all()
     serializer_class = MensajeSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        return Mensaje.objects.filter(remitente=user) | Mensaje.objects.filter(consulta__psicologo=user)
+        # Mostrar mensajes enviados o recibidos por este usuario
+        return Mensaje.objects.filter(remitente=user) | Mensaje.objects.filter(destinatario=user)
 
     def perform_create(self, serializer):
         serializer.save(remitente=self.request.user)

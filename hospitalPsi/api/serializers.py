@@ -37,12 +37,16 @@ class PacienteSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class PsicologoSerializer(serializers.ModelSerializer):
+    usuario = UserSerializer(read_only=True)
+
     class Meta:
         model = Psicologo
         fields = '__all__'
 
 
+
 class SolicitudPsicologoSerializer(serializers.ModelSerializer):
+    usuario = UserSerializer(read_only=True)
     cv = serializers.CharField(read_only=True)
    # cv = serializers.CharField(required=False)
 
@@ -65,8 +69,8 @@ class ConsultaSerializer(serializers.ModelSerializer):
 class MensajeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mensaje
-        fields = ['id', 'consulta', 'consulta_id', 'remitente', 'remitente_nombre', 'contenido', 'fecha_envio']
-        read_only_fields = ['remitente', 'fecha_envio']
+        fields = ['id', 'remitente', 'destinatario', 'contenido', 'fecha_envio']
+        read_only_fields = ['remitente', 'fecha_envio']  
 
 class DiarioEmocionalSerializer(serializers.ModelSerializer):
     class Meta:
