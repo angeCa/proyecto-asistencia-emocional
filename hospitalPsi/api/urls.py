@@ -55,4 +55,9 @@ urlpatterns = [
     # ---- NOTIFICACIONES ----
     path('notificaciones/', NotificacionListCreateView.as_view(), name='notificacion-list-create'),
     path('notificaciones/<int:pk>/', NotificacionRetrieveUpdateDestroyView.as_view(), name='notificacion-detail'),
+
+    path("mensajes/conversacion/<int:otro_usuario_id>/", obtener_conversacion),
+    path("mensajes/mis_chats/", mis_chats),
+
+
 ]

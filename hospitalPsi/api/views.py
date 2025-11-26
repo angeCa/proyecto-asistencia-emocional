@@ -1,14 +1,18 @@
 from rest_framework import generics
 from .models import *
-from django.contrib.auth.models import Group
 from .serializers import *
+from django.db.models import Q
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.contrib.auth.models import Group
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework import generics, permissions
 from rest_framework_simplejwt.views import TokenObtainPairView
 import cloudinary.uploader
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 import uuid
 
@@ -188,14 +192,6 @@ class MensajeListCreateView(generics.ListCreateAPIView):
     serializer_class = MensajeSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
-        user = self.request.user
-        # Mostrar mensajes enviados o recibidos por este usuario
-        return Mensaje.objects.filter(remitente=user) | Mensaje.objects.filter(destinatario=user)
-
-    def perform_create(self, serializer):
-        serializer.save(remitente=self.request.user)
-
 
 class MensajeRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = MensajeSerializer
@@ -203,7 +199,62 @@ class MensajeRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return Mensaje.objects.filter(remitente=user) | Mensaje.objects.filter(consulta__psicologo=user)
+        return Mensaje.objects.filter(remitente=user)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+def obtener_conversacion(request, otro_usuario_id):
+    usuario = request.user
+
+    mensajes = Mensaje.objects.filter(
+        (Q(remitente=usuario) & Q(destinatario_id=otro_usuario_id)) |
+        (Q(remitente_id=otro_usuario_id) & Q(destinatario=usuario))
+    ).order_by("fecha_envio")
+
+    serializer = MensajeSerializer(mensajes, many=True)
+    return Response(serializer.data)
+
+
+
+# ESTO ES PARA LAS CONVERSACIONES ENTRE PAC Y PSI
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+def mis_chats(request):
+    usuario = request.user
+
+    # Chats donde el usuario participa
+    mensajes = Mensaje.objects.filter(
+        Q(remitente=usuario) | Q(destinatario=usuario)
+    ).order_by("-fecha_envio")
+
+    chats = {}
+
+    for m in mensajes:
+        # Identificar al otro usuario del chat
+        if m.remitente_id == usuario.id:
+            otro = m.destinatario
+        else:
+            otro = m.remitente
+        
+        if not otro:
+            continue
+
+        # Guardar solo el más reciente
+        if otro.id not in chats:
+            chats[otro.id] = {
+                "id": otro.id,
+                "nombre": otro.first_name,
+                "apellido": otro.last_name,
+                "email": otro.email,
+                "ultimo_mensaje": m.contenido,
+                "fecha": m.fecha_envio
+            }
+
+    return Response(list(chats.values()))
+
 
 
 # 📔 Diario Emocional

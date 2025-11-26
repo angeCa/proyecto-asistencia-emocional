@@ -70,7 +70,13 @@ class MensajeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mensaje
         fields = ['id', 'remitente', 'destinatario', 'contenido', 'fecha_envio']
-        read_only_fields = ['remitente', 'fecha_envio']  
+        read_only_fields = ['remitente', 'fecha_envio']
+
+    def create(self, validated_data):
+        validated_data['remitente'] = self.context['request'].user
+
+        return super().create(validated_data)
+
 
 class DiarioEmocionalSerializer(serializers.ModelSerializer):
     class Meta:
