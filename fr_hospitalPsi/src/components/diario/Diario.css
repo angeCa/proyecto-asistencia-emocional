@@ -1,0 +1,150 @@
+.diario-container {
+  width: 480px;
+  background: #f4f8ff;
+  border-radius: 15px;
+  padding: 20px;
+  border: 1px solid #aac6ef;
+  box-shadow: 0 3px 10px rgba(0, 63, 121, 0.12);
+}
+
+h2 {
+  text-align: center;
+  color: #0d3b66;
+}
+
+.btn-crear {
+  width: 100%;
+  background: #0d3b66;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 15px;
+}
+
+.diario-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.diario-card {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #91b7e5;
+}
+
+.diario-card h3 {
+  margin: 0;
+  color: #0d3b66;
+}
+
+.fecha {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.card-btns {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.card-btns button {
+  flex: 1;
+  background: #0d3b66;
+  color: white;
+  border: none;
+  padding: 7px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.card-btns .eliminar {
+  background: #cc2e2e;
+}
+
+.detalle-card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #91b7e5;
+}
+
+.descripcion {
+  margin: 15px 0;
+  background: #eef4ff;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.diario-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.diario-form input,
+.diario-form textarea {
+  padding: 10px;
+  border: 1px solid #8fb4e9;
+  border-radius: 8px;
+}
+
+.check {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.cancel {
+  background: #7d7d7d !important;
+}
+/* Selector de emociones */
+.emoji-selector {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.emoji-item {
+  background: #ffffff;
+  border: 2px solid #aac6ef;
+  border-radius: 10px;
+  padding: 10px 5px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.emoji-item:hover {
+  background: #e9f2ff;
+}
+
+.emoji-item p {
+  margin: 5px 0 0;
+  font-size: 12px;
+  color: #0d3b66;
+}
+
+.emoji {
+  font-size: 28px;
+}
+
+.seleccionado {
+  background: #0d3b66 !important;
+  color: white;
+  border-color: #0d3b66 !important;
+}
+
+.seleccionado .emoji {
+  filter: brightness(1.2);
+}

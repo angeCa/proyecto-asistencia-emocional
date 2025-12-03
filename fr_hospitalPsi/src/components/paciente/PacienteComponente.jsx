@@ -1,75 +1,85 @@
 import React, { useEffect, useState } from "react";
 import ServicesPsicologos from "../../services/ServicesPsicologo";
-import ServicesMensajes from "../../services/ServicesMensajes";
-
+import ChatPaciente from "../chatPP/ChatPaciente";
+import "./PacienteComponente.css"
+import NavBar from "../navbar/NavBar";
+import Footer from "../footer/Footer";
+import Diario from "../diario/Diario"
 
 export default function PacienteComponente() {
   const [psicologos, setPsicologos] = useState([]);
   const [psicologoSeleccionado, setPsicologoSeleccionado] = useState("");
-  const [mensaje, setMensaje] = useState("");
 
-  //Escoger psicologo
+  // ID del usuario logueado
+  const miId = localStorage.getItem("id_paciente");
+
+  console.log(miId);
+
+  //aprobar psicologo
   useEffect(() => {
     ServicesPsicologos.getPsicologos()
       .then(data => {
-        // Solo mostrar aprobados
         const aprobados = data.filter(p => p.estado === "aprobado");
         setPsicologos(aprobados);
       })
       .catch(err => console.error("Error cargando psicólogos", err));
   }, []);
 
-  //enviar mensaje
-
-
-  const enviarMensaje = async () => {
-    const nuevaData = {
-      destinatario: psicologoSeleccionado,
-      contenido: mensaje
-    };
-
-    try {
-    await ServicesMensajes.postMensaje(nuevaData);
-    alert("Mensaje enviado correctamente");
-    setMensaje(""); // limpiar textarea
-  } catch (error) {
-    console.error(error);
-    alert("No se pudo enviar el mensaje");
-  }
-};
-
-
-
+  console.log(psicologos);
 
 
   return (
-    <div>
-      <div className="seleccionarPsi">
-        <div style={{ padding: "20px" }}>
-          <h2>Enviar Consulta</h2>
+    <div><div className="AppContainer">
+  <NavBar />
 
-          <label>Selecciona bien a tu Psicólogo:</label>
-          <select
-            value={psicologoSeleccionado}
-            onChange={(e) => setPsicologoSeleccionado(e.target.value)}
-          >
-            <option value="">-- Aquí puedes escoger un psicologo para enviar consulta--</option>
-            {psicologos.map(ps => (
-              <option key={ps.id} value={ps.id}>
-                {ps.usuario.first_name} {ps.usuario.last_name} {ps.especialidad}
-              </option>
-            ))}
-          </select>
+  <div className="PrincipalDiv">
+    {/* Contenedor principal de 2 columnas */}
+    <div className="DosColumnas">
+
+      {/* Columna izquierda: Psicólogo + Chat */}
+      <div className="ColumnaIzquierda">
+        <div className="ContenedorPrin">
+          <div className="seleccionarPsi">
+            <div style={{ padding: "20px" }}>
+              <h2>Enviar Consulta</h2>
+
+              <label>Selecciona tu Psicólogo:</label>
+              <select
+                value={psicologoSeleccionado}
+                onChange={(e) => setPsicologoSeleccionado(e.target.value)}
+              >
+                <option value="">-- Selecciona un psicólogo --</option>
+                {psicologos.map(ps => (
+                  <option key={ps.usuario.id} value={ps.usuario.id}>
+                    {ps.usuario.first_name} {ps.usuario.last_name} ({ps.especialidad})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {psicologoSeleccionado && (
+            <div className="ChatPacienteContainer">
+              <ChatPaciente
+                otroUsuarioId={psicologoSeleccionado}
+                yoId={miId}
+              />
+            </div>
+          )}
         </div>
       </div>
-      <div className="EnviarCon">
-        <textarea
-          value={mensaje}
-          onChange={e => setMensaje(e.target.value)}
-          placeholder="Escriba su consulta..."
-        />
-        <button onClick={enviarMensaje}>Enviar mensaje</button>
+
+      {/* Columna derecha: Diario emocional */}
+      <div className="ColumnaDerecha">
+        <Diario />
       </div>
+
+    </div>
+  </div>
+
+  {/* Footer centrado abajo */}
+  <Footer />
+</div>
 
 
     </div>

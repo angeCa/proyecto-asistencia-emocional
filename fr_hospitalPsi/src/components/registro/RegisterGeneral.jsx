@@ -3,6 +3,9 @@ import services_user from "../../services/servicesUsuario";
 import services_usergroup from "../../services/servicesUser_groups"
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import "./RegistroGeneral.css"
+import NavBar from "../navbar/NavBar";
+import Footer from "../footer/Footer";
 
 function RegisterGeneral() {
   const [nombre, setNombre] = useState("");
@@ -14,8 +17,10 @@ function RegisterGeneral() {
   const [fecha_nacimiento, setFecha_Nacimiento] = useState("")
   const [diagnostico, setDiagnostico] = useState("")
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
- 
+
+
   function validarCampos() {
     if (!nombre.trim()) {
       Swal.fire("Error", "Debes llenar esta casilla", "error");
@@ -58,7 +63,7 @@ function RegisterGeneral() {
   }
 
   async function ingresarInfo() {
-    if (!validarCampos()) return; 
+    if (!validarCampos()) return;
 
     try {
       const nuevoUsuario = {
@@ -75,12 +80,12 @@ function RegisterGeneral() {
 
       //aqui envio el rol
       const infogroup = {
-        usuario : respuesta.id,
-        group : 2
+        usuario: respuesta.id,
+        group: 2
       }
       const respuesta2 = await services_usergroup.postUser_Group(infogroup)
       console.log("Usuario con rol correcto:", respuesta2);
-      
+
 
       Swal.fire({
         icon: "success",
@@ -103,37 +108,69 @@ function RegisterGeneral() {
 
   return (
     <div>
-      <div className='registro'>
-        <h1>Registro de usuarios</h1>
-                <label htmlFor="nombre">Nombre</label>
-                <input type="text" placeholder="Ingresa tu nombre..." value={nombre} onChange={(e) => setNombre(e.target.value)} className="usuario" />
-                  <br />
-                  <label htmlFor="apellido">Apellido</label>
-                <input type="text" placeholder="Ingresa tu apellido..." value={apellido} onChange={(e) => setApellido(e.target.value)} className="usuario" />
-                  <br />
-                <label htmlFor="correo">Correo electrónico</label>
-                <input type="email" placeholder="Ingresa tu correo..." value={correo} onChange={(e) => setCorreo(e.target.value)} className="usuario" />
-                  <br />
-                <label htmlFor="telefono">Telefono</label>
-                <input type="number" placeholder="Ingresa tu telefono..." value={telefono} onChange={(e) => setTelefono(e.target.value)} className="usuario" />
-                  <br />
-                <label htmlFor="direccion">Direccion</label>
-                <input type="text" placeholder="Ingresa tu país y provincia..." value={direccion} onChange={(e) => setDireccion(e.target.value)} className="usuario" />
-                  <br />
-                <label htmlFor="diagnostico">Diagnostico</label>
-                <textarea name="diagnostico" placeholder="¿Tienes un diagnostico?" value={diagnostico} onChange={(e) => setDiagnostico(e.target.value)} className="usuario" ></textarea>
-                  <br />
-                  <label htmlFor="fecha_nacimiento">fecha_nacimiento</label>
-                <input type="date" placeholder="Ingresa tu fecha de nacimiento" value={fecha_nacimiento} onChange={(e) => setFecha_Nacimiento(e.target.value)} className="usuario" />
-                  <br />
-                  <label htmlFor="contrasena">Contraseña</label>
-                <input type="password" placeholder="Ingresa tu contraseña..." value={contrasena} onChange={(e) => setContrasena(e.target.value)} className="usuario" />
-                  <br />
-                  <br />
-                <button onClick={ingresarInfo} className="boton-primario">Registrarse</button>
-                <button onClick={() => navigate("/login")} className="boton-secundario">Ya tengo cuenta</button>
-                
+
+      <div><NavBar /></div>
+
+      <div className="registro-container">
+
+        <div className="registro-message-only">
+          <h2>¡Nos alegra que quieras dar este paso!</h2>
+          <p>Crear tu cuenta es el primer paso hacia un espacio seguro y de apoyo emocional.</p>
+        </div>
+
+        <div className='registro-form'>
+          <h1>Registro de usuarios</h1>
+
+          <label>Nombre</label>
+          <input type="text" placeholder="Ingresa tu nombre..." value={nombre} onChange={(e) => setNombre(e.target.value)} className="usuario" />
+
+          <label>Apellido</label>
+          <input type="text" placeholder="Ingresa tu apellido..." value={apellido} onChange={(e) => setApellido(e.target.value)} className="usuario" />
+
+          <label>Correo electrónico</label>
+          <input type="email" placeholder="Ingresa tu correo..." value={correo} onChange={(e) => setCorreo(e.target.value)} className="usuario" />
+
+          <label>Teléfono</label>
+          <input type="number" placeholder="Ingresa tu teléfono..." value={telefono} onChange={(e) => setTelefono(e.target.value)} className="usuario" />
+
+          <label>Dirección</label>
+          <input type="text" placeholder="Ingresa tu país y provincia..." value={direccion} onChange={(e) => setDireccion(e.target.value)} className="usuario" />
+
+          <label>Diagnóstico (opcional)</label>
+          <textarea placeholder="¿Tienes un diagnóstico?" value={diagnostico} onChange={(e) => setDiagnostico(e.target.value)} className="usuario"></textarea>
+
+          <label>Fecha de nacimiento</label>
+          <input type="date" value={fecha_nacimiento} onChange={(e) => setFecha_Nacimiento(e.target.value)} className="usuario"
+            max={new Date().toISOString().split("T")[0]} />
+
+          <label>Contraseña</label>
+          <div className="password-field">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Ingresa tu contraseña..."
+              value={contrasena}
+              onChange={(e) => setContrasena(e.target.value)}
+              className="usuario"
+            />
+
+            <button
+              type="button"
+              className="toggle-password"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? "Ocultar" : "Ver"}
+            </button>
+          </div>
+
+
+
+          <button onClick={ingresarInfo} className="boton-primario">Registrarse</button>
+          <button onClick={() => navigate("/login")} className="boton-secundario">Ya tengo cuenta</button>
+        </div>
       </div>
+
+      <div><Footer /></div>
+
     </div>
   )
 }

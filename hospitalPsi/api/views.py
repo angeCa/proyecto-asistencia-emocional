@@ -4,6 +4,7 @@ from .serializers import *
 from django.db.models import Q
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.contrib.auth.models import Group
+from django.contrib.auth.hashers import make_password
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -72,7 +73,7 @@ class AprobarSolicitudAPIView(APIView):
                 "email": solicitud.correo,
                 "first_name": solicitud.nombre,
                 "last_name": solicitud.apellido,
-                "password": "ContraTemporal123",
+                "password": make_password("ContraTemporal123"),
             }
         )
 
@@ -214,6 +215,7 @@ def obtener_conversacion(request, otro_usuario_id):
     ).order_by("fecha_envio")
 
     serializer = MensajeSerializer(mensajes, many=True)
+    print(serializer.data)
     return Response(serializer.data)
 
 
@@ -225,24 +227,31 @@ def obtener_conversacion(request, otro_usuario_id):
 def mis_chats(request):
     usuario = request.user
 
-    # Chats donde el usuario participa
+    print(usuario)
+
+    # Filtrar solo mensajes donde participa
     mensajes = Mensaje.objects.filter(
         Q(remitente=usuario) | Q(destinatario=usuario)
     ).order_by("-fecha_envio")
 
+    if not mensajes.exists():
+        return Response([])
+
     chats = {}
 
     for m in mensajes:
-        # Identificar al otro usuario del chat
+
+        # Ignorar mensajes incompletos
+        if m.remitente is None or m.destinatario is None:
+            continue
+
+        # Identificar al otro participante
         if m.remitente_id == usuario.id:
             otro = m.destinatario
         else:
             otro = m.remitente
-        
-        if not otro:
-            continue
 
-        # Guardar solo el más reciente
+        # Guardar siempre el mensaje más reciente
         if otro.id not in chats:
             chats[otro.id] = {
                 "id": otro.id,

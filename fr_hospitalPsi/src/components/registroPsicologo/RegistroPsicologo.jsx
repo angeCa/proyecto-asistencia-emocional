@@ -3,7 +3,7 @@ import Swal from "sweetalert2";
 import NavBar from "../navbar/NavBar";
 //import './Registropsicologia.css'
 import Footer from "../footer/Footer";
-import fondo from "../img/RPsicologia.png";
+import './Registropsicologia.css'
 import ServicesSolicitudesPsicologos from "../../services/ServicesSolicitudesPsicologos";
 
 function RegistroPsicologo() {

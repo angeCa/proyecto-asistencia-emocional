@@ -1,0 +1,93 @@
+/* Contenedor principal */
+.AppContainer {
+  display: flex;
+  padding-top: 80px;
+  gap: 20px;
+  flex-direction: column;
+  min-height: 100vh; /* toda la pantalla */
+}
+
+/* Contenido principal que ocupa espacio */
+.PrincipalDiv {
+  flex: 1; /* ocupa todo el espacio disponible */
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+/* Navbar fijo */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 98%;
+  z-index: 1000;
+}
+
+/* Dos columnas */
+.DosColumnas {
+  display: flex;
+  width: 100%;
+  max-width: 1300px;
+  padding: 20px;
+  gap: 40px;
+}
+
+/* Columna izquierda */
+.ColumnaIzquierda {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Columna derecha */
+.ColumnaDerecha {
+  flex: 1.4;
+  background: #eef6ff;
+  padding: 20px;
+  border-radius: 18px;
+  box-shadow: 0 4px 15px rgba(0, 63, 121, 0.12);
+  height: fit-content;
+  position: sticky;
+  top: 20px;
+}
+
+/* Contenedor del chat y select */
+.ContenedorPrin {
+  width: 100%;
+  background: #eef6ff;
+  border-radius: 18px;
+  box-shadow: 0 4px 15px rgba(0, 63, 121, 0.12);
+  padding: 10px;
+}
+
+.seleccionarPsi {
+  background: #dcecff;
+  padding: 25px;
+  border-radius: 15px;
+  border: 1px solid #bcd8f0;
+  margin-bottom: 20px;
+}
+
+.ChatPacienteContainer {
+  display: flex;
+  justify-content: flex-start;
+  padding: 10px;
+}
+
+/* Footer centrado y abajo */
+.footer {
+  background: #6aa6ff;
+  padding: 12px 25px;
+  text-align: center;
+  color: white;
+  box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
+  width: 1300px;
+}
+
+.footer-text,
+.footer-copy {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}

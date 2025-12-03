@@ -1,0 +1,57 @@
+.psicologo-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;        /* 🔥 Ocupa toda la pantalla */
+  min-height: 100vh;  /* 🔥 Permite que el footer se empuje abajo */
+  padding-top: 80px;
+}
+
+
+/* Lista de pacientes */
+.lista-pacientes {
+  width: 100%;
+  max-width: 400px; /* ajustable */
+  background: #eef6ff;
+  padding: 15px;
+  border-radius: 10px;
+  margin-left: 20px; /* 🔥 pegado a la izquierda */
+  box-shadow: 0 4px 10px rgba(0, 63, 121, 0.12);
+}
+
+.item-paciente {
+  padding: 10px;
+  background: #dcecff;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.item-paciente.active {
+  background: #b8d7ff;
+  font-weight: bold;
+}
+
+/* Zona del chat */
+.zona-chat {
+  width: 100%;
+  max-width: 900px; /* ajustable */
+  margin-left: 20px; /* 🔥 izquierda */
+  margin-top: 20px;
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 63, 121, 0.12);
+  align-self: flex-start; /* 🔥 Nunca se centra */
+}
+
+.mensaje-info {
+  margin: 0;
+  padding: 20px;
+  color: #003f79;
+}
+
+
+/* --- FOOTER --- */
+footer {
+  margin-top: auto;
+}

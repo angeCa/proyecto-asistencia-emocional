@@ -83,10 +83,7 @@ async function loginUsuario(email, password) {
             throw new Error("Credenciales incorrectas");
         }
 
-        const data = await response.json(); // Aquí viene el access y refresh token
-        // Podés guardar el token en localStorage
-        localStorage.setItem("access", data.access);
-        localStorage.setItem("refresh", data.refresh);
+        const data = await response.json(); 
 
         return data;
     } catch (error) {

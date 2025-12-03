@@ -1,5 +1,5 @@
 export async function postMensaje(data) {
-const access = localStorage.getItem("access") || localStorage.getItem("access_token")  || localStorage.getItem("token");
+const access = localStorage.getItem("access_paciente") || localStorage.getItem("access_token")  || localStorage.getItem("token");
 
   const response = await fetch("http://127.0.0.1:8000/api/mensajes/", {
     method: "POST",
@@ -14,7 +14,7 @@ const access = localStorage.getItem("access") || localStorage.getItem("access_to
 }
 
 export async function getConversacion(otroUsuarioId) {
-const access = localStorage.getItem("access") || localStorage.getItem("access_token")  || localStorage.getItem("token");
+const access = localStorage.getItem("access_paciente") || localStorage.getItem("access_token")  || localStorage.getItem("token");
 
 
   const response = await fetch(
@@ -31,7 +31,7 @@ const access = localStorage.getItem("access") || localStorage.getItem("access_to
   return await response.json();
 }
 export async function getMisChats() {
-const access = localStorage.getItem("access") || localStorage.getItem("access_token")  || localStorage.getItem("token");
+const access = localStorage.getItem("access_paciente") || localStorage.getItem("access_token")  || localStorage.getItem("token");
 
   const response = await fetch("http://127.0.0.1:8000/api/mensajes/mis_chats/", {
     method: "GET",

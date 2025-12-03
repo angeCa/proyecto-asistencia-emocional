@@ -1,86 +1,109 @@
-/* TIPOGRAFÍA */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap');
-
+/* NAVBAR GENERAL */
 .navbar {
-  width: 100vh;
-  padding: 1rem 2rem;
-  background-color: var(--color-background, #f0f8ff);
+  width: 98%;
+  background: #6aa6ff;
+  padding: 12px 25px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  border-bottom: 1.5px solid var(--color-border);
-  font-family: 'Montserrat', sans-serif;
+  align-items: center;
+  color: white;
+  box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
 }
 
-/* LOGO */
-.nav-logo span {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: var(--color-primary);
+.nav-logo {
+  font-size: 20px;
+  font-weight: bold;
 }
 
 /* LINKS */
 .navbar-links {
-  display: flex;
-  gap: 2rem;
   list-style: none;
+  display: flex;
+  gap: 25px;
 }
 
-.navbar-links a {
+.navbar-links li a {
+  color: white;
   text-decoration: none;
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--color-foreground);
-  transition: 0.2s ease;
+  font-size: 16px;
+  transition: 0.2s;
 }
 
-.navbar-links a:hover {
-  color: var(--color-primary);
-  border-bottom: 2px solid var(--color-primary);
+.navbar-links li a:hover {
+  color: #dce7ff;
 }
 
-/* BOTÓN DE USUARIO */
-.user-btn {
-  background-color: var(--color-secondary);
+/* DERECHA (logout + perfil) */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* BOTÓN LOGOUT */
+.logout-btn {
+  background: #3b5bdb;
+  color: white;
+  padding: 7px 14px;
   border: none;
-  color: var(--color-secondary-foreground);
-  padding: 0.5rem 0.9rem;
-  border-radius: var(--radius-md);
-  font-size: 1.1rem;
+  border-radius: 6px;
   cursor: pointer;
-  transition: 0.2s ease;
+  transition: 0.25s;
 }
 
-.user-btn:hover {
-  background-color: var(--color-primary);
-  color: var(--color-primary-foreground);
+.logout-btn:hover {
+  background: #2f49b5;
 }
 
-/* ====== DARK MODE ====== */
-.dark .navbar {
-  background-color: var(--color-sidebar);
-  border-color: var(--color-sidebar-border);
+/* PERFIL */
+.perfil {
+  position: relative;
 }
 
-.dark .nav-logo span {
-  color: var(--color-primary);
+.user-btn {
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  font-size: 20px;
+  cursor: pointer;
 }
 
-.dark .navbar-links a {
-  color: var(--color-sidebar-foreground);
+/* MENÚ DESPLEGABLE */
+.user-menu {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  background: white;
+  color: #333;
+  width: 140px;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: fadeIn 0.2s ease-in-out;
 }
 
-.dark .navbar-links a:hover {
-  color: var(--color-primary);
-  border-bottom: 2px solid var(--color-primary);
+.user-menu a {
+  text-decoration: none;
+  color: #3b5bdb;
+  font-size: 14px;
 }
 
-.dark .user-btn {
-  background-color: var(--color-sidebar-accent);
-  color: var(--color-sidebar-accent-foreground);
+.user-menu a:hover {
+  text-decoration: underline;
 }
 
-.dark .user-btn:hover {
-  background-color: var(--color-primary);
-  color: var(--color-primary-foreground);
+.menu-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+/* ANIMACIÓN */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
