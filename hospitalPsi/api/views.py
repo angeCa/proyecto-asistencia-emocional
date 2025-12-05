@@ -129,9 +129,9 @@ class UsuarioListCreateView(generics.ListCreateAPIView):
     queryset = Usuario.objects.all()
     serializer_class = UserSerializer
 
-    def perform_create(self, serializer):
+    """ def perform_create(self, serializer):
         usuario = serializer.save()
-        Paciente.objects.create(usuario=usuario)
+        Paciente.objects.create(usuario=usuario) """
 
 
 class UsuarioRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -145,8 +145,8 @@ class PacienteListCreateView(generics.ListCreateAPIView):
     queryset = Paciente.objects.all()
     serializer_class = PacienteSerializer
 
-    def perform_create(self, serializer):
-        serializer.save(paciente=self.request.user)
+    """ def perform_create(self, serializer):
+        serializer.save(paciente=self.request.user) """
 
 
 class PacienteRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -272,15 +272,27 @@ class DiarioEmocionalListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Filtrar por el paciente autenticado
-        return DiarioEmocional.objects.filter(paciente__usuario=self.request.user)
+    user = self.request.user
 
-    def perform_create(self, serializer):
-        # Obtener el paciente vinculado al usuario
-        paciente = Paciente.objects.get(usuario=self.request.user)
+    # PACIENTE → solo los suyos
+    if hasattr(user, "paciente"):
+        return DiarioEmocional.objects.filter(
+            paciente=user.paciente
+        ).order_by("-id")
 
-        # Guardar la entrada automáticamente con ese paciente
-        serializer.save(paciente=paciente)
+    # PSICÓLOGO → solo los visibles Y solo del paciente seleccionado
+    if hasattr(user, "psicologo"):
+        paciente_id = self.request.query_params.get("paciente_id")
+
+        if paciente_id:
+            return DiarioEmocional.objects.filter(
+                paciente_id=paciente_id,
+                visible_para_psicologo=True
+            ).order_by("-id")
+
+        return DiarioEmocional.objects.none()
+
+    return DiarioEmocional.objects.none()
 
 
 class DiarioEmocionalRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -289,8 +301,14 @@ class DiarioEmocionalRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPI
 
     def get_queryset(self):
         user = self.request.user
-        paciente = Paciente.objects.get(usuario=user)
-        return DiarioEmocional.objects.filter(paciente=paciente)
+
+        if hasattr(user, "paciente"):
+            return DiarioEmocional.objects.filter(paciente=user.paciente)
+
+        if hasattr(user, "psicologo"):
+            return DiarioEmocional.objects.filter(visible_para_psicologo=True)
+
+        return DiarioEmocional.objects.none()
 
 # 📊 Estadística
 

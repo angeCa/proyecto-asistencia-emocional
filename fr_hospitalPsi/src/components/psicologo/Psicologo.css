@@ -1,57 +1,84 @@
 .psicologo-container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;        /* 🔥 Ocupa toda la pantalla */
-  min-height: 100vh;  /* 🔥 Permite que el footer se empuje abajo */
-  padding-top: 80px;
+  width: 100%;
 }
 
+.psicologo-contenido {
+  margin-top: 80px; /* espacio del navbar */
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
 
-/* Lista de pacientes */
+/* 🔵 LISTA DE PACIENTES ARRIBA */
 .lista-pacientes {
-  width: 100%;
-  max-width: 400px; /* ajustable */
-  background: #eef6ff;
+  background: #eef4ff;
   padding: 15px;
   border-radius: 10px;
-  margin-left: 20px; /* 🔥 pegado a la izquierda */
-  box-shadow: 0 4px 10px rgba(0, 63, 121, 0.12);
 }
 
 .item-paciente {
   padding: 10px;
-  background: #dcecff;
-  margin-bottom: 10px;
+  background: #dfe9ff;
+  margin-bottom: 8px;
   border-radius: 8px;
   cursor: pointer;
+  transition: .2s;
+}
+
+.item-paciente:hover {
+  background: #c7d7ff;
 }
 
 .item-paciente.active {
-  background: #b8d7ff;
+  background: #97b3ff;
   font-weight: bold;
 }
 
-/* Zona del chat */
-.zona-chat {
+/* 🔵 ABAJO: 2 COLUMNAS */
+.zona-inferior {
+  display: flex;
+  gap: 20px;
   width: 100%;
-  max-width: 900px; /* ajustable */
-  margin-left: 20px; /* 🔥 izquierda */
-  margin-top: 20px;
-  background: white;
+}
+
+/* CHAT A LA IZQUIERDA */
+.zona-chat {
+  flex: 1;
+  min-height: 400px;
+  background: #fafafa;
+  padding: 10px;
   border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 10px rgba(0, 63, 121, 0.12);
-  align-self: flex-start; /* 🔥 Nunca se centra */
 }
 
+/* DIARIOS A LA DERECHA */
+.zona-diarios {
+  flex: 1;
+  min-height: 400px;
+  background: #f5f7ff;
+  padding: 10px;
+  border-radius: 10px;
+  overflow-y: auto;
+}
+
+/* Mensajes de texto */
 .mensaje-info {
-  margin: 0;
+  color: gray;
   padding: 20px;
-  color: #003f79;
+  text-align: center;
+  font-style: italic;
 }
 
+.zona-inferior {
+  display: flex;
+  gap: 20px;
+}
 
-/* --- FOOTER --- */
-footer {
-  margin-top: auto;
+.zona-chat {
+  flex: 2;
+}
+
+.zona-diarios {
+  flex: 1.2;
+  max-height: 500px;
 }

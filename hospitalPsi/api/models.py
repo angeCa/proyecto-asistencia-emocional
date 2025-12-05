@@ -9,11 +9,10 @@ class Usuario(AbstractUser):
     def __str__(self):
         return f"{self.username} | {self.direccion} | {self.telefono}"
 
-
 # 💖 3. Paciente
 class Paciente(models.Model):
     usuario = models.OneToOneField(
-        Usuario, on_delete=models.CASCADE, related_name="paciente")
+        Usuario, on_delete=models.CASCADE, related_name="Paciente")
     fecha_nacimiento = models.DateField(blank=True, null=True)
     diagnostico = models.TextField(blank=True, null=True)
 
@@ -104,7 +103,7 @@ class Mensaje(models.Model):
     )
     destinatario = models.ForeignKey(
         # permite que sea vacío
-    Usuario, on_delete=models.CASCADE, related_name="mensajes_recibidos", null=True, blank=True )
+        Usuario, on_delete=models.CASCADE, related_name="mensajes_recibidos", null=True, blank=True)
     contenido = models.TextField()
     fecha_envio = models.DateTimeField(auto_now_add=True)
 

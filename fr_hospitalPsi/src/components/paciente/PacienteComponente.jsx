@@ -40,7 +40,6 @@ export default function PacienteComponente() {
       <div className="ColumnaIzquierda">
         <div className="ContenedorPrin">
           <div className="seleccionarPsi">
-            <div style={{ padding: "20px" }}>
               <h2>Enviar Consulta</h2>
 
               <label>Selecciona tu Psicólogo:</label>
@@ -82,7 +81,7 @@ export default function PacienteComponente() {
 </div>
 
 
-    </div>
+    
 
   );
 }

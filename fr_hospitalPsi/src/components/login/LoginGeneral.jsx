@@ -34,7 +34,7 @@ function LoginGeneral() {
         localStorage.setItem("role_paciente", role);
         localStorage.setItem("id_paciente", id);
       } else if (role === "admin") {
-        localStorage.setItem("access_admin", access);
+        localStorage.setItem("access_adzmin", access);
         localStorage.setItem("refresh_admin", refresh);
         localStorage.setItem("role_admin", role);
         localStorage.setItem("id_admin", id);

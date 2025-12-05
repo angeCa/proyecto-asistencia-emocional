@@ -1,85 +1,124 @@
-const API_URL = "http://127.0.0.1:8000/api/diario/";
+// servicesDiario.js
 
-// 🔐 Función central para obtener SIEMPRE el token correcto
+const BASE_URL = "http://127.0.0.1:8000/api/diario/";
+
 function getToken() {
-  return (
-    localStorage.getItem("access_paciente") ||
-    localStorage.getItem("access") ||
-    localStorage.getItem("token") ||
-    null
-  );
+    return localStorage.getItem("access_psicologo");
+    
 }
 
-// 🟩 Obtener todos los diarios del paciente logueado
-export async function getDiarios() {
-  const token = getToken();
+async function getDiarios(pacienteId) {
+    try {
+        const token = getToken();
 
-  const response = await fetch(API_URL, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: token ? `Bearer ${token}` : "",
-    },
-  });
+        let url = `${BASE_URL}?paciente_id=${pacienteId}`;
 
-  return await response.json();
+        console.log("📡 URL solicitada:", url);
+
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": token ? `Bearer ${token}` : ""
+            }
+        });
+
+        const data = await response.json();
+        console.log("📥 Respuesta del backend:", data);
+        return data;
+
+    } catch (error) {
+        console.error("❌ Error al obtener los diarios", error);
+        throw error;
+    }
 }
 
-// 🟦 Crear un nuevo diario emocional
-export async function postDiario(data) {
-  const token = getToken();
 
-  const response = await fetch(API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: token ? `Bearer ${token}` : "",
-    },
-    body: JSON.stringify(data),
-  });
 
-  return await response.json();
+
+async function postDiario(data) {
+    try {
+        const token = getToken();
+
+        const response = await fetch(BASE_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": token ? `Bearer ${token}` : ""
+            },
+            body: JSON.stringify(data)
+        });
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error al crear el diario", error);
+        throw error;
+    }
 }
 
-// 🟨 Obtener un diario por ID
-export async function getDiarioById(id) {
-  const token = getToken();
+async function patchDiario(id, data) {
+    try {
+        const token = getToken();
 
-  const response = await fetch(`${API_URL}${id}/`, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: token ? `Bearer ${token}` : "",
-    },
-  });
+        const response = await fetch(`${BASE_URL}${id}/`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": token ? `Bearer ${token}` : ""
+            },
+            body: JSON.stringify(data)
+        });
 
-  return await response.json();
+        return await response.json();
+    } catch (error) {
+        console.error("Error al hacer PATCH del diario", error);
+        throw error;
+    }
 }
 
-// 🟧 Actualizar un diario
-export async function updateDiario(id, data) {
-  const token = getToken();
+async function updateDiario(id, data) {
+    try {
+        const token = getToken();
 
-  const response = await fetch(`${API_URL}${id}/`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: token ? `Bearer ${token}` : "",
-    },
-    body: JSON.stringify(data),
-  });
+        const response = await fetch(`${BASE_URL}${id}/`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": token ? `Bearer ${token}` : ""
+            },
+            body: JSON.stringify(data)
+        });
 
-  return await response.json();
+        return await response.json();
+    } catch (error) {
+        console.error("Error al actualizar el diario", error);
+        throw error;
+    }
 }
 
-// 🟥 Eliminar un diario
-export async function deleteDiario(id) {
-  const token = getToken();
+async function deleteDiario(id) {
+    try {
+        const token = getToken();
 
-  const response = await fetch(`${API_URL}${id}/`, {
-    method: "DELETE",
-    headers: {
-      Authorization: token ? `Bearer ${token}` : "",
-    },
-  });
+        const response = await fetch(`${BASE_URL}${id}/`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": token ? `Bearer ${token}` : ""
+            }
+        });
 
-  return response.status === 204;
+        return response.status === 204;
+    } catch (error) {
+        console.error("Error al eliminar el diario", error);
+        throw error;
+    }
 }
+
+export default {
+    getDiarios,
+    postDiario,
+    patchDiario,
+    updateDiario,
+    deleteDiario
+};
