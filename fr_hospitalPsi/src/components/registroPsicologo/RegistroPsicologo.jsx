@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import Swal from "sweetalert2";
 import NavBar from "../navbar/NavBar";
-//import './Registropsicologia.css'
 import Footer from "../footer/Footer";
 import './Registropsicologia.css'
 import ServicesSolicitudesPsicologos from "../../services/ServicesSolicitudesPsicologos";
@@ -56,11 +55,8 @@ function RegistroPsicologo() {
    return (
     <div>
       <NavBar />
-
-      {/* Fondo con imagen importada */}
       <div 
         className="registro-psicologo-container"
-        //style={{ backgroundImage: `url(${fondo})` }}
       >
         <div className="registro-psicologo">
           <h1>Registro de Psicólogo</h1>

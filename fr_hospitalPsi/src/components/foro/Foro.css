@@ -1,0 +1,114 @@
+.foro-container {
+  padding: 20px;
+}
+
+.foro-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 16px;
+}
+
+.foro-panel {
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+}
+
+.foro-input, .foro-textarea {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 8px;
+}
+
+.foro-btn {
+  margin-top: 10px;
+  padding: 9px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #1976d2;
+  color: #fff;
+  font-weight: 600;
+}
+
+.foro-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.foro-item {
+  text-align: left;
+  border: 1px solid #eee;
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.foro-item.active {
+  border-color: #1976d2;
+  background: #eaf3ff;
+}
+
+.foro-item-title {
+  font-weight: 700;
+}
+
+.foro-item-meta {
+  font-size: 12px;
+  color: #7f8c8d;
+}
+
+.foro-post-body {
+  margin-top: 8px;
+  color: #34495e;
+}
+
+.foro-comentarios {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.foro-comentario {
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 12px;
+  background: #fff;
+}
+
+.foro-comentario-meta {
+  font-size: 12px;
+  color: #7f8c8d;
+  margin-bottom: 6px;
+}
+
+.foro-comentario-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.btn-like, .btn-delete {
+  border: none;
+  border-radius: 8px;
+  padding: 7px 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-like {
+  background: #2ecc71;
+  color: #fff;
+}
+
+.btn-delete {
+  background: #e74c3c;
+  color: #fff;
+}

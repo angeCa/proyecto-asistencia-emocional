@@ -1,45 +1,61 @@
-export async function postMensaje(data) {
-const access = localStorage.getItem("access_paciente") || localStorage.getItem("access_token")  || localStorage.getItem("token");
+const API = "http://127.0.0.1:8000/api";
 
-  const response = await fetch("http://127.0.0.1:8000/api/mensajes/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${access}`
-    },
-    body: JSON.stringify(data)
-  });
+function getToken() {
+  return (
+    localStorage.getItem("access_paciente") ||
+    localStorage.getItem("access_psicologo") ||
+    localStorage.getItem("access_admin") ||
+    localStorage.getItem("access") ||
+    localStorage.getItem("token") ||
+    ""
+  );
+}
 
-  return await response.json();
+async function safeJson(response) {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
 }
 
 export async function getConversacion(otroUsuarioId) {
-const access = localStorage.getItem("access_paciente") || localStorage.getItem("access_token")  || localStorage.getItem("token");
+  const token = getToken();
 
-
-  const response = await fetch(
-    `http://127.0.0.1:8000/api/mensajes/conversacion/${otroUsuarioId}/`,
-    {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${access}`,
-        "Content-Type": "application/json",
-      }
-    }
-  );
-
-  return await response.json();
-}
-export async function getMisChats() {
-const access = localStorage.getItem("access_paciente") || localStorage.getItem("access_token")  || localStorage.getItem("token");
-
-  const response = await fetch("http://127.0.0.1:8000/api/mensajes/mis_chats/", {
+  const resp = await fetch(`${API}/mensajes/conversacion/${otroUsuarioId}/`, {
     method: "GET",
     headers: {
-      "Authorization": `Bearer ${access}`,
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
   });
 
-  return await response.json();
+  const data = await safeJson(resp);
+
+  if (!resp.ok) {
+    throw new Error(data?.detail || "No autorizado o error al cargar la conversación.");
+  }
+
+  return data;
+}
+
+export async function postMensaje(payload) {
+  const token = getToken();
+
+  const resp = await fetch(`${API}/mensajes/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await safeJson(resp);
+
+  if (!resp.ok) {
+    throw new Error(data?.detail || "No se pudo enviar el mensaje.");
+  }
+
+  return data;
 }

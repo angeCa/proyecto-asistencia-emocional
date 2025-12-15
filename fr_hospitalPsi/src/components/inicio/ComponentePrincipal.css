@@ -3,9 +3,27 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding-top: 90px;
     width: 100%;
     gap: 30px;
 }
+.PrincipalPage {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* El main ocupa el espacio entre navbar y footer */
+.Principal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 90px; /* para no quedar debajo del navbar fijo */
+  width: 100%;
+  gap: 30px;
+}
+
 
 /* HERO */
 .Hero {

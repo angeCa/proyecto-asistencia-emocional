@@ -1,13 +1,15 @@
+/* CONTENEDOR PRINCIPAL */
 .chat-container {
   display: flex;
   flex-direction: column;
   width: 450px;
   height: 520px;
-  background: #E8F3FF;
-  border-radius: 15px;
-  border: 1px solid #AECFF5;
-  box-shadow: 0 3px 10px rgba(0, 63, 121, 0.12);
+  background: linear-gradient(to bottom, #eef6ff, #e3efff);
+  border-radius: 18px;
+  border: 1px solid #bcd8ff;
+  box-shadow: 0 4px 14px rgba(25, 78, 145, 0.18);
   overflow: hidden;
+  animation: fadeIn 0.3s ease-out;
 }
 
 /* HEADER */
@@ -16,18 +18,33 @@
   color: white;
   padding: 15px;
   font-size: 20px;
-  font-weight: bold;
+  font-weight: 600;
   text-align: center;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 /* MENSAJES */
 .chat-messages {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 15px;
+  gap: 12px;
+  padding: 18px;
   flex: 1;
   overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+/* SCROLL SUAVE */
+.chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+.chat-messages::-webkit-scrollbar-thumb {
+  background: #9ec6f7;
+  border-radius: 10px;
+}
+.chat-messages::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 /* BURBUJA BASE */
@@ -36,9 +53,11 @@
   padding: 10px 15px;
   border-radius: 14px;
   font-size: 15px;
+  line-height: 1.4;
   position: relative;
   display: flex;
   flex-direction: column;
+  animation: slideUp 0.2s ease-out;
 }
 
 /* Nombre encima del mensaje */
@@ -51,26 +70,28 @@
 
 /* TU MENSAJE (DERECHA) */
 .message-mine {
-  background: #A9D6FF;
-  color: #032B4F;
+  background: #a7d4ff;
+  color: #0b2d4e;
   margin-left: auto;
   border-bottom-right-radius: 4px;
+  box-shadow: 0 3px 6px rgba(36, 110, 187, 0.2);
 }
 
 /* MENSAJE PSICÓLOGO (IZQUIERDA) */
 .message-other {
-  background: #FFFFFF;
-  color: #000;
+  background: #ffffff;
+  color: #111;
   margin-right: auto;
   border-bottom-left-radius: 4px;
-  border: 1px solid #C8D6E5;
+  border: 1px solid #d7e5f5;
+  box-shadow: 0 3px 6px rgba(80, 80, 80, 0.08);
 }
 
-/* ZONA DE ESCRIBIR */
+/* INPUT */
 .chat-input-area {
   display: flex;
   padding: 12px;
-  background: #D6E9FF;
+  background: #d9eaff;
   border-top: 2px solid #0D3B66;
   gap: 10px;
 }
@@ -78,22 +99,54 @@
 .chat-input-area input {
   flex: 1;
   padding: 10px;
-  border: 1px solid #7BB1E8;
-  border-radius: 8px;
+  border: 1px solid #8dbbef;
+  border-radius: 10px;
   font-size: 15px;
   outline: none;
+  transition: 0.15s ease;
 }
 
+.chat-input-area input:focus {
+  border-color: #0D3B66;
+  box-shadow: 0 0 4px rgba(13, 59, 102, 0.3);
+}
+
+/* BOTÓN ENVIAR */
 .chat-input-area button {
   background: #0D3B66;
   color: white;
   border: none;
-  padding: 12px 18px;
-  border-radius: 8px;
+  padding: 12px 20px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: 0.2s;
+  transition: 0.2s ease;
+  font-weight: 500;
 }
 
 .chat-input-area button:hover {
   background: #092949;
+  transform: scale(1.03);
+}
+
+.chat-input-area button:active {
+  transform: scale(0.97);
+}
+.chat-error{
+  margin: 8px 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: rgba(255, 0, 0, 0.08);
+}
+
+
+/* ANIMACIONES */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }

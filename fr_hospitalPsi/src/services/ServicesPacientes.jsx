@@ -1,103 +1,137 @@
+// src/services/ServicesPacientes.jsx
 
+const BASE_URL = "http://127.0.0.1:8000/api";
+
+function getToken() {
+  return (
+    localStorage.getItem("access_paciente") ||
+    localStorage.getItem("access_psicologo") ||
+    localStorage.getItem("access_admin") ||
+    localStorage.getItem("access") ||
+    localStorage.getItem("token")
+  );
+}
+
+async function parseJsonSafe(res) {
+  try {
+    return await res.json();
+  } catch {
+    return {};
+  }
+}
 
 async function getPacientes() {
-    try {
-        const response = await fetch('http://127.0.0.1:8000/api/pacientes/', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
+  try {
+    const token = getToken();
 
-        return await response.json();
-    } catch (error) {
-        console.error("Hay un error al obtener los pacientes", error);
-        throw error;
+    const response = await fetch(`${BASE_URL}/pacientes/`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+
+    const data = await parseJsonSafe(response);
+
+    if (!response.ok) {
+      throw new Error(data?.detail || "Error al obtener pacientes");
     }
+
+    return data;
+  } catch (error) {
+    console.error("Hay un error al obtener los pacientes", error);
+    throw error;
+  }
 }
-
-
 export async function getDiariosPaciente() {
-  const response = await fetch("http://127.0.0.1:8000/api/diarios/");
-  return await response.json();
-}
+  const token = getToken();
 
+  const response = await fetch(`${BASE_URL}/diario/`, {
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+
+  const data = await parseJsonSafe(response);
+
+  if (!response.ok) {
+    throw new Error(data?.detail || "Error al obtener diarios");
+  }
+
+  return data;
+}
 
 async function postPacientes(data) {
-    try {
-        const response = await fetch('http://127.0.0.1:8000/api/pacientes/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
 
-        return await response.json();
-    } catch (error) {
-        console.error("Hay un error al registrar el pacientes", error);
-        throw error;
+  return registrarPaciente(data);
+}
+
+async function registrarPaciente(data) {
+  try {
+    const token = getToken();
+
+    const response = await fetch(`${BASE_URL}/pacientes/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(data),
+    });
+
+    const resData = await parseJsonSafe(response);
+
+    if (!response.ok) {
+      // si tu backend manda errores por campo, aquí se ven mejor
+      const firstKey = resData && typeof resData === "object" ? Object.keys(resData)[0] : null;
+      const msg =
+        resData?.detail ||
+        (firstKey && Array.isArray(resData[firstKey]) ? resData[firstKey][0] : null) ||
+        "Error registrando paciente";
+
+      throw new Error(msg);
     }
+
+    return resData;
+  } catch (error) {
+    console.error("Hay un error al registrar el paciente", error);
+    throw error;
+  }
 }
 
 async function patchPacientes(id, data) {
-    try {
-        const response = await fetch(`http://127.0.0.1:8000/api/pacientes/`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-
-        return await response.json();
-    } catch (error) {
-        console.error("Hay un error al actualizar el psicólogo", error);
-        throw error;
-    }
+  const response = await fetch(`http://127.0.0.1:8000/api/pacientes/${id}/`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return await response.json();
 }
 
 async function updatePacientes(id, data) {
-    try {
-        const response = await fetch(`http://127.0.0.1:8000/api/pacientes/`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-
-        return await response.json();
-    } catch (error) {
-        console.error("Hay un error al actualizar completamente el pacientes", error);
-        throw error;
-    }
+  const response = await fetch(`http://127.0.0.1:8000/api/pacientes/${id}/`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return await response.json();
 }
 
 async function deletePacientes(id) {
-    try {
-        const response = await fetch(`http://127.0.0.1:8000/api/pacientes/`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-
-        return response.status === 204;
-    } catch (error) {
-        console.error("Hay un error al eliminar el paciente", error);
-        throw error;
-    }
+  const response = await fetch(`http://127.0.0.1:8000/api/pacientes/${id}/`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+  });
+  return response.status === 204;
 }
 
+
 export default {
-    getPacientes,
-    postPacientes,
-    updatePacientes,
-    patchPacientes,
-    deletePacientes
+  getPacientes,
+  postPacientes,
+  updatePacientes,
+  patchPacientes,
+  deletePacientes,
+  registrarPaciente,
 };
-
-
-
-

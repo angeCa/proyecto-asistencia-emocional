@@ -1,0 +1,73 @@
+.calendario-consulta {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: auto;
+}
+
+.campo-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.campo-form label {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.campo-form input[type="date"],
+.campo-form select,
+.campo-form textarea {
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  padding: 8px 10px;
+  font-size: 14px;
+  outline: none;
+  background: #ffffff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.campo-form input[type="date"]:focus,
+.campo-form select:focus,
+.campo-form textarea:focus {
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.texto-secundario {
+  font-size: 13px;
+  color: #7f8c8d;
+}
+
+.btn-crear-consulta {
+  margin-top: 4px;
+  align-self: flex-start;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: #27ae60;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.btn-crear-consulta:hover {
+  background: #1e8449;
+  transform: translateY(-1px);
+}
+
+.mensaje-error-consulta {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #c0392b;
+}
+
+.mensaje-ok-consulta {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #1e8449;
+}

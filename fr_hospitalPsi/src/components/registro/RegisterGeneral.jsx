@@ -1,6 +1,7 @@
 import React, { use, useState } from "react";
 import services_user from "../../services/servicesUsuario";
 import services_usergroup from "../../services/servicesUser_groups"
+import ServicesPacientes from "../../services/ServicesPacientes";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import "./RegistroGeneral.css"
@@ -20,7 +21,7 @@ function RegisterGeneral() {
   const [showPassword, setShowPassword] = useState(false);
 
 
-
+  //validaciones
   function validarCampos() {
     if (!nombre.trim()) {
       Swal.fire("Error", "Debes llenar esta casilla", "error");
@@ -61,49 +62,49 @@ function RegisterGeneral() {
 
     return true;
   }
-
   async function ingresarInfo() {
     if (!validarCampos()) return;
 
     try {
       const nuevoUsuario = {
         first_name: nombre,
-        last_name: apellido /* crear */,
+        last_name: apellido,
         username: correo,
         telefono,
         direccion,
-        password: contrasena
+        password: contrasena,
       };
-      //aqui envio el usuario
+
       const respuesta = await services_user.postUsuarios(nuevoUsuario);
       console.log("Usuario registrado:", respuesta);
 
-      //aqui envio el rol
-      const infogroup = {
-        usuario: respuesta.id,
-        group: 2
-      }
-      const respuesta2 = await services_usergroup.postUser_Group(infogroup)
+      const infogroup = { usuario: respuesta.id, group: 2 };
+      const respuesta2 = await services_usergroup.postUser_Group(infogroup);
       console.log("Usuario con rol correcto:", respuesta2);
 
+
+      const pacientePayload = {
+        usuario: respuesta.id,
+        fecha_nacimiento: fecha_nacimiento || null,
+        diagnostico: diagnostico || "",
+      };
+
+      const pacienteResp = await ServicesPacientes.postPacientes(pacientePayload);
+      console.log("Paciente creado:", pacienteResp);
 
       Swal.fire({
         icon: "success",
         title: "¡Registro exitoso!",
         text: "Tu cuenta ha sido creada correctamente.",
         confirmButtonColor: "#3085d6",
-      }).then(() => {
-        navigate("/login");
-      });
+      }).then(() => navigate("/login"));
+
     } catch (error) {
       console.error("Error al registrar usuario:", error);
-      Swal.fire(
-        "Error",
-        "Ocurrió un error al registrarte. Intenta nuevamente.",
-        "error"
-      );
+      Swal.fire("Error", error?.message || "Ocurrió un error al registrarte.", "error");
     }
   }
+
 
 
   return (

@@ -1,102 +1,174 @@
 import { useEffect, useState } from "react";
-import { getMisChats } from "../../services/ServicesMensajesPsicologo";
 import ChatPsicologo from "../chatPP/ChatPsicologo";
 import NavBar from "../navbar/NavBar";
 import Footer from "../footer/Footer";
-import ServicesUsuario from "../../services/ServicesUsuario";
+import ServicesPacientes from "../../services/ServicesPacientes";
+import ServicesUsuario from "../../services/servicesUsuario";
+import MisConsultasPsicologo from "../consultas/ConsultasPsicologo";
+import RecursoForm from "./RecursosForm";
+import DiarioEmocionalPsicologo from "./DiarioEmocionalPsicologo";
 import "./Psicologo.css";
-import DiariosPaciente from "../diariospacientes/DiariosPaciente";
-
-
 
 function PsicologoComponente() {
-  const [listaChats, setListaChats] = useState([]);
+  const [pacientes, setPacientes] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
   const [pacienteSeleccionado, setPacienteSeleccionado] = useState(null);
+  const [mostrarLista, setMostrarLista] = useState(false);
+  const [mostrarRecurso, setMostrarRecurso] = useState(false);
+  const [mostrarCitas, setMostrarCitas] = useState(false);
+  const [mostrarDiario, setMostrarDiario] = useState(false);
 
-  const miId = parseInt(localStorage.getItem("id_psicologo"));
+  const miId = parseInt(localStorage.getItem("id_usuario"));
+
 
   useEffect(() => {
-    cargarChats();
+    cargarPacientesYUsuarios();
   }, []);
 
-  const cargarChats = async () => {
+  const cargarPacientesYUsuarios = async () => {
     try {
-      const chats = await getMisChats();
-      console.log("🔥 CHATS RECIBIDOS:", chats);
-      setListaChats(Array.isArray(chats) ? chats : []);
+      const pacientesData = await ServicesPacientes.getPacientes();
+      const usuariosData = await ServicesUsuario.getUsuarios();
+      setPacientes(pacientesData);
+      setUsuarios(usuariosData);
     } catch (error) {
-      console.error("Error al cargar chats:", error);
+      console.error("Error cargando pacientes o usuarios", error);
     }
   };
-  const cargarPacientes = async function () {
-    try {
-      const pacientes = await getUsuarios();
 
-    } catch (error) {
+  const getNombreCompleto = (paciente) => {
+    if (!paciente) return "";
+    const usuario = usuarios.find((u) => u.id === paciente.usuario);
+    return usuario ? `${usuario.first_name} ${usuario.last_name}` : "Sin nombre";
+  };
 
-    }
+  const seleccionarPaciente = (paciente) => {
+    setPacienteSeleccionado(paciente);
+    setMostrarLista(false);
+  };
 
-  }
+  const cerrarChat = () => {
+    setPacienteSeleccionado(null);
+    setMostrarDiario(false);
+  };
 
   return (
-    <div className="psicologo-container">
+    <div className="conteneGeneral">
       <NavBar />
 
-      <div className="psicologo-contenido">
+      <div className="psicologo-container">
+        <div className="psicologo-panel">
+          <h2>Panel de Psicólogo</h2>
 
-        {/* 🔵 LISTA DE PACIENTES ARRIBA */}
-        <div className="lista-pacientes">
-          <h2>Mis Pacientes</h2>
+          <div className="psicologo-actions">
+            <button
+              className="btn-ver-pacientes"
+              onClick={() => setMostrarLista(!mostrarLista)}
+            >
+              {mostrarLista ? "Ocultar pacientes" : "Ver pacientes"}
+            </button>
 
-          {listaChats.length === 0 ? (
-            <p>No tienes chats aún.</p>
-          ) : (
-            listaChats.map((p) => (
-              <div
-                key={p.id}
-                className={`item-paciente ${pacienteSeleccionado === p.id ? "active" : ""}`}
-                onClick={() => {
-                  console.log("📌 PACIENTE SELECCIONADO:", p);
-                  setPacienteSeleccionado(p.id);
-                }}
-              >
-                {p.nombre} {p.apellido}
-              </div>
-            ))
+            <button
+              className={`btn-accion-panel ${mostrarDiario ? "btn-accion-activo" : ""
+                }`}
+              onClick={() => setMostrarDiario(!mostrarDiario)}
+              disabled={!pacienteSeleccionado}
+            >
+              {pacienteSeleccionado
+                ? "Ver diario emocional"
+                : "Selecciona un paciente"}
+            </button>
+
+            <button
+              className={`btn-accion-panel ${mostrarRecurso ? "btn-accion-activo" : ""
+                }`}
+              onClick={() => setMostrarRecurso(!mostrarRecurso)}
+            >
+              ¿Quieres crear un recurso?
+            </button>
+
+            <button
+              className={`btn-accion-panel ${mostrarCitas ? "btn-accion-activo" : ""
+                }`}
+              onClick={() => setMostrarCitas(!mostrarCitas)}
+            >
+              Ver citas
+            </button>
+          </div>
+
+          {mostrarLista && (
+            <div className="lista-pacientes">
+              {pacientes.length === 0 ? (
+                <p>No hay pacientes disponibles.</p>
+              ) : (
+                pacientes.map((p) => (
+                  <div
+                    key={p.id}
+                    className={`item-paciente ${pacienteSeleccionado?.id === p.id ? "active" : ""
+                      }`}
+                    onClick={() => seleccionarPaciente(p)}
+                  >
+                    {getNombreCompleto(p)}
+                  </div>
+                ))
+              )}
+            </div>
           )}
-        </div>
 
-        {/* 🔵 ABAJO: CHAT IZQUIERDA + DIARIOS DERECHA */}
-        <div className="zona-inferior">
+          <div className="zona-inferior">
+            <div className="zona-chat">
+              {pacienteSeleccionado ? (
+                <>
+                  <button className="btn-cerrar-chat" onClick={cerrarChat}>
+                    Cerrar Chat
+                  </button>
 
-          {/* Chat del psicólogo */}
-          <div className="zona-chat">
-            {pacienteSeleccionado ? (
-              <ChatPsicologo
-                otroUsuarioId={pacienteSeleccionado}
-                yoId={miId}
-              />
-            ) : (
-              <p className="mensaje-info">Selecciona un paciente para abrir el chat</p>
-            )}
+                  <ChatPsicologo
+                    otroUsuarioId={pacienteSeleccionado.usuario}
+                    yoId={miId}
+                    cerrarChat={cerrarChat}
+                  />
+                </>
+              ) : (
+                <p className="mensaje-info">
+                  Selecciona un paciente para abrir el chat
+                </p>
+              )}
+            </div>
+
+            <div className="zona-lateral">
+              {mostrarCitas && (
+                <div className="zona-consultas-psico">
+                  <h3 className="titulo-bloque-lateral">Citas</h3>
+                  <MisConsultasPsicologo />
+                </div>
+              )}
+
+              {mostrarRecurso && (
+                <div className="panel-de-psicologia">
+                  <RecursoForm />
+                </div>
+              )}
+
+              {mostrarDiario && pacienteSeleccionado && (
+                <div className="diario-psico-panel">
+                  <h3 className="titulo-bloque-lateral">
+                    Diario emocional de {getNombreCompleto(pacienteSeleccionado)}
+                  </h3>
+                  <DiarioEmocionalPsicologo
+                    pacienteId={pacienteSeleccionado.id}
+                    nombrePaciente={getNombreCompleto(pacienteSeleccionado)}
+                  />
+                </div>
+              )}
+            </div>
           </div>
-
-          <div className="zona-diarios">
-            {pacienteSeleccionado ? (
-              <DiariosPaciente pacienteId={pacienteSeleccionado} />
-            ) : (
-              <p className="mensaje-info">Selecciona un paciente para ver sus diarios</p>
-            )}
-          </div>
-
-
         </div>
       </div>
 
       <Footer />
     </div>
   );
-
 }
 
 export default PsicologoComponente;

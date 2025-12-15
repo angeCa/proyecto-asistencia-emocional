@@ -1,93 +1,160 @@
-/* Contenedor principal */
-.AppContainer {
+.DosColumnasPaciente {
   display: flex;
-  padding-top: 80px;
-  gap: 20px;
   flex-direction: column;
-  min-height: 100vh; /* toda la pantalla */
-}
-
-/* Contenido principal que ocupa espacio */
-.PrincipalDiv {
-  flex: 1; /* ocupa todo el espacio disponible */
-  display: flex;
-  justify-content: center;
-  width: 100%;
-}
-
-/* Navbar fijo */
-.navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 98%;
-  z-index: 1000;
-}
-
-/* Dos columnas */
-.DosColumnas {
-  display: flex;
   width: 100%;
   max-width: 1300px;
   padding: 20px;
-  gap: 40px;
+  gap: 24px;
 }
 
-/* Columna izquierda */
-.ColumnaIzquierda {
-  flex: 2;
+.FilaSuperiorPaciente,
+.FilaInferiorPaciente {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.ColumnaSuperior,
+.ColumnaInferior {
+  flex: 1;
+}
+
+.ColumnaChatPaciente .ChatPacienteContainer {
+  margin-top: 12px;
+  min-height: 280px;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 3px 10px rgba(0, 63, 121, 0.08);
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
 }
 
-/* Columna derecha */
-.ColumnaDerecha {
-  flex: 1.4;
-  background: #eef6ff;
-  padding: 20px;
-  border-radius: 18px;
-  box-shadow: 0 4px 15px rgba(0, 63, 121, 0.12);
-  height: fit-content;
-  position: sticky;
-  top: 20px;
-}
-
-/* Contenedor del chat y select */
-.ContenedorPrin {
+.diario-psico-container{
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 6px 18px rgba(0, 63, 121, 0.10);
   width: 100%;
-  background: #eef6ff;
-  border-radius: 18px;
-  box-shadow: 0 4px 15px rgba(0, 63, 121, 0.12);
+}
+
+.diario-psico-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom: 8px;
+}
+
+.diario-psico-refresh{
+  border: none;
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  background: #0d3b66;
+  color: #fff;
+  font-weight: 600;
+}
+
+.diario-psico-refresh:disabled{
+  opacity: .7;
+  cursor: default;
+}
+
+.diario-psico-sub{
+  margin: 6px 0 12px;
+  color: #475569;
+  font-size: 0.95rem;
+}
+
+.diario-psico-msg{
+  background:#f1f5f9;
+  padding:10px 12px;
+  border-radius: 10px;
+  color:#334155;
+  margin-bottom: 12px;
+}
+
+.diario-psico-list{
+  display:flex;
+  flex-direction:column;
+  gap: 12px;
+}
+
+.diario-psico-item{
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+  background: #f8fbff;
+}
+
+.diario-psico-meta{
+  display:flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.9rem;
+  color:#1f2937;
+  margin-bottom: 8px;
+}
+
+.diario-psico-titulo{
+  font-weight: 800;
+  margin: 0 0 6px;
+  color:#0f172a;
+}
+
+.diario-psico-desc{
+  margin: 0;
+  color:#334155;
+  line-height: 1.35;
+}
+
+
+.mensaje-info-paciente {
+  font-size: 0.9rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .FilaSuperiorPaciente,
+  .FilaInferiorPaciente {
+    flex-direction: column;
+  }
+}
+/* SELECT ESTILIZADO */
+.select-psicologo-estilizado {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  border: 1px solid #c9d6e8;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #0d3b66;
+  appearance: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+
+  /* Espacio para la flechita */
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%230D3B66' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+
+.select-psicologo-estilizado:hover {
+  border-color: #0d3b66;
+  box-shadow: 0 0 4px rgba(13, 59, 102, 0.25);
+}
+
+.select-psicologo-estilizado:focus {
+  border-color: #0d3b66;
+  box-shadow: 0 0 0 3px rgba(13, 59, 102, 0.2);
+}
+
+/* Opciones del desplegable */
+.select-psicologo-estilizado option {
   padding: 10px;
-}
-
-.seleccionarPsi {
-  background: #dcecff;
-  padding: 25px;
-  border-radius: 15px;
-  border: 1px solid #bcd8f0;
-  margin-bottom: 20px;
-}
-
-.ChatPacienteContainer {
-  display: flex;
-  justify-content: flex-start;
-  padding: 10px;
-}
-
-/* Footer centrado y abajo */
-.footer {
-  background: #6aa6ff;
-  padding: 12px 25px;
-  text-align: center;
-  color: white;
-  box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
-  width: 1300px;
-}
-
-.footer-text,
-.footer-copy {
-  max-width: 800px;
-  margin: 0 auto;
-  text-align: center;
+  font-size: 0.95rem;
 }
