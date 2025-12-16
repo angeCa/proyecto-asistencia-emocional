@@ -162,6 +162,18 @@ cloudinary.config(
 )
 
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+# ================== CONFIGURACIÓN ZOOM ==================
+ZOOM_ACCOUNT_ID = "by-6SbacQw2DN2Om1XeP3Q"
+ZOOM_CLIENT_ID = "CtFYCKXfQeAPIzY1LEUQ"
+ZOOM_CLIENT_SECRET = "rFFAS7Mjpi4hanQwsyKK33ekuuZX1hGJ"
+
+ZOOM_OAUTH_URL = "https://zoom.us/oauth/token"
+ZOOM_API_BASE = "https://api.zoom.us/v2"
+# =======================================================
+
+ADMIN_INVITE_CODE = "SoloparaAdmin100"
+
+# Host fijo de Zoom (DEBE existir en la cuenta Zoom)
+ZOOM_HOST_USER_ID = "angelitorrescarrion@gmail.com" 
 
 

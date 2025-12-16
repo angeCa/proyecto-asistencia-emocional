@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 
 
@@ -68,17 +69,14 @@ class Psicologo(models.Model):
 
 
 # 💬 5. Consulta
-
-
 class Consulta(models.Model):
-    paciente = models.ForeignKey(
-        Paciente, on_delete=models.CASCADE, related_name="consultas")
-    psicologo = models.ForeignKey(
-        Psicologo, on_delete=models.CASCADE, related_name="consultas_atendidas")
+    paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE, related_name="consultas")
+    psicologo = models.ForeignKey(Psicologo, on_delete=models.CASCADE, related_name="consultas_atendidas")
     motivo = models.TextField(blank=False, null=False)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_programada = models.DateTimeField(blank=True, null=True)
     enlace_zoom = models.URLField(blank=True, null=True)
+
     estado = models.CharField(
         max_length=20,
         choices=[
@@ -89,11 +87,13 @@ class Consulta(models.Model):
         ],
         default="pendiente",
     )
+
+    # ya lo tienes:
     notas_psicologo = models.TextField(blank=True, null=True)
     duracion = models.IntegerField(blank=True, null=True)
 
-    def __str__(self):
-        return f"Consulta de {self.paciente} con {self.psicologo} ({self.estado})"
+    # ✅ NUEVO
+    razon_cancelacion = models.TextField(blank=True, null=True)
 
 
 # 💌 6. Mensaje
@@ -102,7 +102,6 @@ class Mensaje(models.Model):
         Usuario, on_delete=models.CASCADE, related_name="mensajes_enviados"
     )
     destinatario = models.ForeignKey(
-        # permite que sea vacío
         Usuario, on_delete=models.CASCADE, related_name="mensajes_recibidos", null=True, blank=True)
     contenido = models.TextField()
     fecha_envio = models.DateTimeField(auto_now_add=True)
@@ -114,12 +113,12 @@ class Mensaje(models.Model):
 # 📔 7. Diario Emocional
 class DiarioEmocional(models.Model):
     paciente = models.ForeignKey(
-        Paciente, on_delete=models.CASCADE, related_name="entradas_diario")
+        Paciente, on_delete=models.CASCADE, related_name="entradas_diario"
+    )
     fecha = models.DateField(auto_now_add=True)
     titulo = models.CharField(max_length=100, blank=False, null=False)
     descripcion = models.TextField(blank=False, null=False)
-    emocion_principal = models.CharField(
-        max_length=50, blank=False, null=False)
+    emocion_principal = models.CharField(max_length=50, blank=False, null=False)
     nivel_intensidad = models.IntegerField(blank=False, null=False)
     visible_para_psicologo = models.BooleanField(default=False)
 
@@ -143,32 +142,58 @@ class Estadistica(models.Model):
 # 📰 9. Recurso Informativo
 class Recurso(models.Model):
     psicologo = models.ForeignKey(
-        Psicologo, on_delete=models.CASCADE, related_name="recursos_publicados")
-    titulo = models.CharField(max_length=200, blank=False, null=False)
-    descripcion = models.TextField(blank=False, null=False)
-    contenido = models.TextField(blank=True, null=True)
-    imagen = models.ImageField(upload_to='recursos/', blank=True, null=True)
-    tipo = models.CharField(max_length=50, blank=False, null=False)
+        Psicologo,
+        on_delete=models.CASCADE,
+        related_name="recursos_publicados"
+    )
+    titulo = models.CharField(max_length=200)
+    descripcion = models.TextField()
+    url = models.URLField(max_length=500, blank=True, null=True)
     fecha_publicacion = models.DateTimeField(auto_now_add=True)
     activo = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"Recurso: {self.titulo} ({self.tipo})"
+        return f"{self.titulo}"
 
 
-# ❤️ 10. Trastorno
-class Trastorno(models.Model):
-    psicologo = models.ForeignKey(
-        Psicologo, on_delete=models.CASCADE, related_name="trastornos_creados")
-    nombre = models.CharField(max_length=100, blank=False, null=False)
-    descripcion = models.TextField(blank=False, null=False)
-    causas = models.TextField(blank=True, null=True)
-    sintomas = models.TextField(blank=True, null=True)
-    tratamiento = models.TextField(blank=True, null=True)
-    enlace_externo = models.URLField(blank=True, null=True)
+# ❤️ 10. Foro
+class ForoPost(models.Model):
+    autor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="foroposts")
+    titulo = models.CharField(max_length=200)
+    contenido = models.TextField()
+    creado_en = models.DateTimeField(auto_now_add=True)
+    actualizado_en = models.DateTimeField(auto_now=True)
+    activo = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"Trastorno: {self.nombre}"
+        return f"{self.titulo} - {self.autor.username}"
+
+
+class ForoComentario(models.Model):
+    post = models.ForeignKey(ForoPost, on_delete=models.CASCADE, related_name="comentarios")
+    autor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="forocomentarios")
+    contenido = models.TextField()
+    creado_en = models.DateTimeField(auto_now_add=True)
+    actualizado_en = models.DateTimeField(auto_now=True)
+    activo = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"Comentario {self.id} - {self.autor.username}"
+
+
+class ForoLike(models.Model):
+    comentario = models.ForeignKey(ForoComentario, on_delete=models.CASCADE, related_name="likes")
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="forolikes")
+    creado_en = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["comentario", "usuario"], name="unique_like_por_usuario")
+        ]
+
+    def __str__(self):
+        return f"Like {self.usuario.username} -> comentario {self.comentario_id}"
+
 
 
 # 🔔 11. Notificación

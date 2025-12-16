@@ -1,7 +1,10 @@
-from rest_framework import generics
+
 from .models import *
 from .serializers import *
 from django.db.models import Q
+from django.conf import settings
+from rest_framework.permissions import AllowAny
+from rest_framework.decorators import action
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.contrib.auth.models import Group
 from django.contrib.auth.hashers import make_password
@@ -10,12 +13,21 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, viewsets
 from rest_framework_simplejwt.views import TokenObtainPairView
 import cloudinary.uploader
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 import uuid
+from rest_framework.permissions import BasePermission
+from django.core.exceptions import PermissionDenied
+
+from datetime import datetime, time
+from .permissions import IsPsicologo
+
+
+from django.core.exceptions import PermissionDenied
+
 
 cloudinary.config(
     cloud_name="dl9nspeal",
@@ -64,40 +76,58 @@ class AprobarSolicitudAPIView(APIView):
         try:
             solicitud = SolicitudPsicologo.objects.get(id=solicitud_id)
         except SolicitudPsicologo.DoesNotExist:
-            return Response({"error": "Solicitud no encontrada"}, status=404)
+            return Response({"error": "Solicitud no encontrada"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Crear usuario
+        temp_password = "ContraTemporal123"
+
+        # ✅ Crear o reutilizar usuario (username = correo)
         usuario, created = Usuario.objects.get_or_create(
             username=solicitud.correo,
             defaults={
                 "email": solicitud.correo,
                 "first_name": solicitud.nombre,
                 "last_name": solicitud.apellido,
-                "password": make_password("ContraTemporal123"),
+                "is_active": True,
             }
         )
 
-        # 🔹 Agregar usuario al grupo correcto
+        # ✅ Asegurar datos + activar + password temporal SIEMPRE
+        usuario.email = solicitud.correo
+        usuario.first_name = solicitud.nombre
+        usuario.last_name = solicitud.apellido
+        usuario.is_active = True
+        usuario.set_password(temp_password)
+        usuario.save()
+
+        # ✅ Agregar al grupo psicologo (debe existir)
         try:
             grupo = Group.objects.get(name__iexact="psicologo")
-
             usuario.groups.add(grupo)
         except Group.DoesNotExist:
-            print("⚠ ERROR: El grupo 'Psicologo' NO existe en la base de datos")
+            return Response(
+                {"error": "El grupo 'psicologo' no existe. Créalo en la BD."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        # 🔹 Crear el registro de psicólogo
-        Psicologo.objects.create(
+        # ✅ Crear registro Psicologo (evita duplicados)
+        Psicologo.objects.update_or_create(
             usuario=usuario,
-            especialidad=solicitud.especialidad,
-            titulo=solicitud.titulo,
-            cv=solicitud.cv,
-            estado="aprobado"
+            defaults={
+                "especialidad": solicitud.especialidad,
+                "titulo": solicitud.titulo,
+                "cv": solicitud.cv,
+                "estado": "aprobado",
+            }
         )
 
         solicitud.estado = "aprobado"
         solicitud.save()
 
-        return Response({"message": "Solicitud aprobada con éxito"}, status=200)
+        return Response(
+            {"message": "Solicitud aprobada con éxito", "temp_password": temp_password},
+            status=status.HTTP_200_OK
+        
+)
 
 
 class RechazarSolicitudAPIView(APIView):
@@ -144,9 +174,7 @@ class UsuarioRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 class PacienteListCreateView(generics.ListCreateAPIView):
     queryset = Paciente.objects.all()
     serializer_class = PacienteSerializer
-
-    """ def perform_create(self, serializer):
-        serializer.save(paciente=self.request.user) """
+    permission_classes = [AllowAny]
 
 
 class PacienteRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -167,17 +195,27 @@ class PsicologoRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
 # 💬 Consulta
 
-
-class ConsultaListCreateView(generics.ListCreateAPIView):
+class ConsultaViewSet(viewsets.ModelViewSet):
+    queryset = Consulta.objects.all()
     serializer_class = ConsultaSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]  # o lo que tengas
 
+    # ✅ AQUÍ VA ESTO
     def get_queryset(self):
         user = self.request.user
-        return Consulta.objects.filter(paciente=user)
 
-    def perform_create(self, serializer):
-        serializer.save(paciente=self.request.user)
+        # Paciente
+        if Paciente.objects.filter(usuario=user).exists():
+            paciente = Paciente.objects.get(usuario=user)
+            return Consulta.objects.filter(paciente=paciente).order_by("-fecha_creacion")
+
+        # Psicólogo
+        if Psicologo.objects.filter(usuario=user).exists():
+            psicologo = Psicologo.objects.get(usuario=user)
+            return Consulta.objects.filter(psicologo=psicologo).order_by("-fecha_creacion")
+
+        # Admin / otros
+        return Consulta.objects.all().order_by("-fecha_creacion")
 
 
 class ConsultaRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -185,13 +223,67 @@ class ConsultaRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ConsultaSerializer
     permission_classes = [IsAuthenticated]
 
+
+class DiasOcupadosPsicologo(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, psicologo_id):
+        consultas = Consulta.objects.filter(
+            psicologo_id=psicologo_id,
+            fecha_programada__isnull=False
+        ).values_list("fecha_programada", flat=True)
+
+        dias = list(set([c.date().isoformat() for c in consultas]))
+        return Response({"dias_ocupados": dias})
+
+
+class HorariosDisponiblesPsicologo(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, psicologo_id):
+        fecha = request.query_params.get("fecha")  # 'YYYY-MM-DD'
+        if not fecha:
+            return Response({"detail": "Falta parámetro fecha (YYYY-MM-DD)."}, status=400)
+
+        try:
+            fecha_obj = datetime.strptime(fecha, "%Y-%m-%d").date()
+        except ValueError:
+            return Response({"detail": "Formato de fecha inválido. Use YYYY-MM-DD."}, status=400)
+
+        consultas = Consulta.objects.filter(
+            psicologo_id=psicologo_id,
+            fecha_programada__date=fecha_obj
+        )
+
+        taken = set()
+        for c in consultas:
+            if c.fecha_programada:
+                taken.add(c.fecha_programada.time().strftime("%H:%M"))
+
+        slots = []
+        for hour in range(8, 18):
+            label = time(hour=hour, minute=0).strftime("%H:%M")
+            slots.append({"time": label, "available": label not in taken})
+
+        return Response({"slots": slots})
+
+
 # 💌 Mensaje
 
 
 class MensajeListCreateView(generics.ListCreateAPIView):
-    queryset = Mensaje.objects.all()
     serializer_class = MensajeSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Mensaje.objects.filter(
+            Q(remitente=user) | Q(Consulta__paciente__usuario=user) | Q(
+                Consulta__psicologo__usuario=user)
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(remitente=self.request.user)
 
 
 class MensajeRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -203,6 +295,7 @@ class MensajeRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         return Mensaje.objects.filter(remitente=user)
 
 
+# para los mensajes
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication])
@@ -217,7 +310,6 @@ def obtener_conversacion(request, otro_usuario_id):
     serializer = MensajeSerializer(mensajes, many=True)
     print(serializer.data)
     return Response(serializer.data)
-
 
 
 # ESTO ES PARA LAS CONVERSACIONES ENTRE PAC Y PSI
@@ -264,51 +356,44 @@ def mis_chats(request):
 
     return Response(list(chats.values()))
 
+# termina seccion de mensajes
 
 
 # 📔 Diario Emocional
+
 class DiarioEmocionalListCreateView(generics.ListCreateAPIView):
+    queryset = DiarioEmocional.objects.all()
     serializer_class = DiarioEmocionalSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-    user = self.request.user
-
-    # PACIENTE → solo los suyos
-    if hasattr(user, "paciente"):
-        return DiarioEmocional.objects.filter(
-            paciente=user.paciente
-        ).order_by("-id")
-
-    # PSICÓLOGO → solo los visibles Y solo del paciente seleccionado
-    if hasattr(user, "psicologo"):
-        paciente_id = self.request.query_params.get("paciente_id")
-
-        if paciente_id:
-            return DiarioEmocional.objects.filter(
-                paciente_id=paciente_id,
-                visible_para_psicologo=True
-            ).order_by("-id")
-
-        return DiarioEmocional.objects.none()
-
-    return DiarioEmocional.objects.none()
+    def perform_create(self, serializer):
+        # Paciente crea su diario: se setea automáticamente
+        paciente = Paciente.objects.get(usuario=self.request.user)
+        serializer.save(paciente=paciente)
 
 
 class DiarioEmocionalRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = DiarioEmocional.objects.all()
     serializer_class = DiarioEmocionalSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        user = self.request.user
 
-        if hasattr(user, "paciente"):
-            return DiarioEmocional.objects.filter(paciente=user.paciente)
+class DiarioPorPacienteView(APIView):
+    """
+    Devuelve los diarios de un paciente, solo los visibles para psicólogo.
+    URL: /api/diario/paciente/<paciente_id>/
+    """
+    permission_classes = [IsAuthenticated]
 
-        if hasattr(user, "psicologo"):
-            return DiarioEmocional.objects.filter(visible_para_psicologo=True)
+    def get(self, request, paciente_id):
+        diarios = DiarioEmocional.objects.filter(
+            paciente_id=paciente_id,
+            visible_para_psicologo=True
+        ).order_by("-fecha", "-id")
 
-        return DiarioEmocional.objects.none()
+        serializer = DiarioEmocionalSerializer(diarios, many=True)
+        return Response(serializer.data)
+
 
 # 📊 Estadística
 
@@ -325,26 +410,126 @@ class EstadisticaRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView
 # 📰 Recurso
 
 
+class IsPsicologoOrAdmin(BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+
+        # ✅ es psicólogo aprobado
+        if Psicologo.objects.filter(usuario=user, estado="aprobado").exists():
+            return True
+
+        # ✅ es admin (grupo "admin")
+        if user.groups.filter(name__iexact="admin").exists():
+            return True
+
+        return False
+
+# 📰 Recurso
+
+
 class RecursoListCreateView(generics.ListCreateAPIView):
-    queryset = Recurso.objects.all()
     serializer_class = RecursoSerializer
+
+    def get_queryset(self):
+        return Recurso.objects.filter(activo=True).order_by("-fecha_publicacion")
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated(), IsPsicologoOrAdmin()]
+
+    def perform_create(self, serializer):
+        psicologo = Psicologo.objects.get(usuario=self.request.user)
+        serializer.save(psicologo=psicologo)
 
 
 class RecursoRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Recurso.objects.all()
     serializer_class = RecursoSerializer
+    queryset = Recurso.objects.all()
 
-# ❤️ Trastorno
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated(), IsPsicologoOrAdmin()]
+
+# ❤️ Foro
 
 
-class TrastornoListCreateView(generics.ListCreateAPIView):
-    queryset = Trastorno.objects.all()
-    serializer_class = TrastornoSerializer
+def es_admin(user):
+    return user.groups.filter(name__iexact="admin").exists()
 
 
-class TrastornoRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Trastorno.objects.all()
-    serializer_class = TrastornoSerializer
+class SoloAutorOAdmin(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return es_admin(request.user) or getattr(obj, "autor_id", None) == request.user.id
+
+
+class ForoPostViewSet(viewsets.ModelViewSet):
+    serializer_class = ForoPostSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return ForoPost.objects.filter(activo=True).order_by("-creado_en")
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        ctx["request"] = self.request
+        return ctx
+
+    permission_classes_by_action = {
+        "update": [permissions.IsAuthenticated, SoloAutorOAdmin],
+        "partial_update": [permissions.IsAuthenticated, SoloAutorOAdmin],
+        "destroy": [permissions.IsAuthenticated, SoloAutorOAdmin],
+    }
+
+    def get_permissions(self):
+        perms = self.permission_classes_by_action.get(
+            self.action, self.permission_classes)
+        return [p() for p in perms]
+
+
+class ForoComentarioViewSet(viewsets.ModelViewSet):
+    serializer_class = ForoComentarioSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        post_id = self.request.query_params.get("post")
+        qs = ForoComentario.objects.filter(activo=True).order_by("creado_en")
+        if post_id:
+            qs = qs.filter(post_id=post_id)
+        return qs
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        ctx["request"] = self.request
+        return ctx
+
+    permission_classes_by_action = {
+        "update": [permissions.IsAuthenticated, SoloAutorOAdmin],
+        "partial_update": [permissions.IsAuthenticated, SoloAutorOAdmin],
+        "destroy": [permissions.IsAuthenticated, SoloAutorOAdmin],
+        "toggle_like": [permissions.IsAuthenticated],
+    }
+
+    def get_permissions(self):
+        perms = self.permission_classes_by_action.get(
+            self.action, self.permission_classes)
+        return [p() for p in perms]
+
+    @action(detail=True, methods=["post"])
+    def toggle_like(self, request, pk=None):
+        comentario = self.get_object()
+        like = ForoLike.objects.filter(
+            comentario=comentario, usuario=request.user).first()
+
+        if like:
+            like.delete()
+            return Response({"liked": False, "likes_count": comentario.likes.count()}, status=status.HTTP_200_OK)
+
+        ForoLike.objects.create(comentario=comentario, usuario=request.user)
+        return Response({"liked": True, "likes_count": comentario.likes.count()}, status=status.HTTP_200_OK)
 
 # 🔔 Notificación
 
@@ -360,4 +545,58 @@ class NotificacionRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIVie
 
 
 class CustomeTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
+    serializer_class = CustomeTokenObtainPairSerializer
+
+
+class AdminRegisterView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        codigo = request.data.get("codigo_admin")
+        username = request.data.get("username")
+        email = request.data.get("email")
+        password = request.data.get("password")
+        first_name = request.data.get("first_name", "")
+        last_name = request.data.get("last_name", "")
+
+        # 1) Validar código
+        if codigo != getattr(settings, "ADMIN_INVITE_CODE", None):
+            return Response(
+                {"detail": "Código de administrador inválido."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 2) Validar datos básicos
+        if not username or not email or not password:
+            return Response(
+                {"detail": "Faltan datos obligatorios."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 3) Crear usuario
+        if Usuario.objects.filter(username=username).exists():
+            return Response(
+                {"detail": "Ese usuario ya existe."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user = Usuario.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+        )
+
+        # 4) Agregar al grupo admin
+        grupo_admin, _ = Group.objects.get_or_create(name="admin")
+        user.groups.add(grupo_admin)
+
+        return Response(
+            {"detail": "Administrador creado con éxito."},
+            status=status.HTTP_201_CREATED
+        )
+
+
+class EmailOrUsernameTokenView(TokenObtainPairView):
+    serializer_class = EmailOrUsernameTokenObtainPairSerializer
