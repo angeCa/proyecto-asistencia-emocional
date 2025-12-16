@@ -61,14 +61,6 @@ export default function ComponentePrincipal() {
       desc: "Tus datos están protegidos y se manejan de forma confidencial."
     },
     {
-      title: "Página inclusiva",
-      desc: "Creada para todas las personas sin importar su identidad o situación."
-    },
-    {
-      title: "Asistencia con AmigoBot",
-      desc: "Bot amigable para apoyo emocional básico y respuestas rápidas."
-    },
-    {
       title: "Plataforma confiable",
       desc: "Un espacio seguro, cercano y lleno de apoyo emocional."
     }

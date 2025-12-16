@@ -5,7 +5,8 @@ function getToken() {
     localStorage.getItem("access_paciente") ||
     localStorage.getItem("access_psicologo") ||
     localStorage.getItem("access_admin") ||
-    localStorage.getItem("access")
+    localStorage.getItem("access") ||
+    localStorage.getItem("token") 
   );
 }
 

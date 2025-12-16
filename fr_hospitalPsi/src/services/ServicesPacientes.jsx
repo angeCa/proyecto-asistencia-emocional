@@ -8,7 +8,7 @@ function getToken() {
     localStorage.getItem("access_psicologo") ||
     localStorage.getItem("access_admin") ||
     localStorage.getItem("access") ||
-    localStorage.getItem("token")
+     localStorage.getItem("token") 
   );
 }
 
@@ -83,7 +83,6 @@ async function registrarPaciente(data) {
     const resData = await parseJsonSafe(response);
 
     if (!response.ok) {
-      // si tu backend manda errores por campo, aquí se ven mejor
       const firstKey = resData && typeof resData === "object" ? Object.keys(resData)[0] : null;
       const msg =
         resData?.detail ||
@@ -117,14 +116,31 @@ async function updatePacientes(id, data) {
   });
   return await response.json();
 }
-
 async function deletePacientes(id) {
-  const response = await fetch(`http://127.0.0.1:8000/api/pacientes/${id}/`, {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-  });
-  return response.status === 204;
+  try {
+    const token = getToken();
+
+    const response = await fetch(`${BASE_URL}/pacientes/${id}/`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    if (response.status === 204) return true;
+
+    const data = await parseJsonSafe(response);
+    if (!response.ok) {
+      throw new Error(data?.detail || "No se pudo eliminar el paciente");
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error al eliminar paciente", error);
+    throw error;
+  }
 }
+
 
 
 export default {

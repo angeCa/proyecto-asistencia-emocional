@@ -10,7 +10,6 @@ export default function DiarioEmocionalPsicologo({ pacienteId, nombrePaciente })
   useEffect(() => {
     if (!pacienteId) return;
     cargar();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pacienteId]);
 
   async function cargar() {

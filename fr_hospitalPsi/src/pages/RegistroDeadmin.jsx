@@ -1,13 +1,12 @@
 // src/pages/RegistroDeadmin.jsx
 import React from "react";
-import NavBar from "../components/navbar/NavBar";
-import Footer from "../components/footer/Footer";
+
 import RegistroAdmin from "../components/registroAdmin/RegistroAdmin";
 
 function RegistroDeadmin() {
   return (
     <>
-      <NavBar />
+     
 
       <div className="PrincipalDiv">
         <div className="DosColumnas">
@@ -19,7 +18,7 @@ function RegistroDeadmin() {
         </div>
       </div>
 
-      <Footer />
+ 
     </>
   );
 }

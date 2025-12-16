@@ -67,18 +67,20 @@ function RegisterGeneral() {
 
     try {
       const nuevoUsuario = {
+        username: correo.trim(),          // username = correo
+        email: correo.trim(),
+        password: contrasena,
         first_name: nombre,
         last_name: apellido,
-        username: correo,
         telefono,
         direccion,
-        password: contrasena,
       };
+
 
       const respuesta = await services_user.postUsuarios(nuevoUsuario);
       console.log("Usuario registrado:", respuesta);
-
-      const infogroup = { usuario: respuesta.id, group: 2 };
+                                    //mando grupo 3 = paciente
+      const infogroup = { usuario: respuesta.id, group: 3 };
       const respuesta2 = await services_usergroup.postUser_Group(infogroup);
       console.log("Usuario con rol correcto:", respuesta2);
 

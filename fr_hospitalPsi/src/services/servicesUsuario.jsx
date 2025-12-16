@@ -65,31 +65,53 @@ async function deleteUsuarios(id) {
 }
 
 async function loginUsuario(email, password) {
+  try {
+    const payload = {
+      username: (email || "").trim(), // puede ser correo o username
+      password: password || "",
+    };
+
+    console.log("🔎 Payload login enviado:", payload);
+
+    const response = await fetch("http://127.0.0.1:8000/api/token/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    // ✅ Leer JSON incluso si es error (para ver qué devuelve el backend)
+    let data = {};
     try {
-        const response = await fetch('http://127.0.0.1:8000/api/token/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                username: email, 
-                password: password
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error("Credenciales incorrectas");
-        }
-
-        const data = await response.json(); 
-
-        return data;
-    } catch (error) {
-        console.error("Error al iniciar sesión:", error);
-        throw error;
+      data = await response.json();
+    } catch {
+      data = {};
     }
-    
+
+    console.log("🔎 Respuesta backend token:", response.status, data);
+
+    if (!response.ok) {
+      // SimpleJWT normalmente responde:
+      // {detail: "..."} o {username: ["..."]} o {password: ["..."]}
+      const firstKey =
+        data && typeof data === "object" ? Object.keys(data)[0] : null;
+
+      const msg =
+        data?.detail ||
+        (firstKey && Array.isArray(data[firstKey]) ? data[firstKey][0] : null) ||
+        `Error al iniciar sesión (${response.status})`;
+
+      throw new Error(msg);
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error al iniciar sesión:", error);
+    throw error;
+  }
 }
+
+
+
 
 
 

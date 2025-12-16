@@ -18,7 +18,7 @@ function DiarioEmocionalPaciente() {
   const [msgOk, setMsgOk] = useState("");
   const [msgError, setMsgError] = useState("");
 
-  // 🔹 Cargar diarios al entrar
+  //  Cargar diarios al entrar
   useEffect(() => {
     cargarDiarios();
   }, []);
@@ -33,7 +33,7 @@ function DiarioEmocionalPaciente() {
     }
   }
 
-  // 🔹 Manejar cambios en el form
+  // Manejar cambios en el form
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
     setForm((prev) => ({
@@ -55,14 +55,11 @@ function DiarioEmocionalPaciente() {
     setMsgError("");
     setMsgOk("");
   }
-
-  // 🔹 Crear / editar
   async function handleSubmit(e) {
     e.preventDefault();
     setMsgError("");
     setMsgOk("");
 
-    // 🚨 IMPORTANTE: usar los mismos nombres que el backend espera
     const payload = {
   titulo: form.titulo,
   descripcion: form.descripcion,
@@ -95,8 +92,6 @@ function DiarioEmocionalPaciente() {
       setMsgError("Ocurrió un error al guardar la entrada.");
     }
   }
-
-  // 🔹 Cargar datos al form para editar
   function handleEditar(d) {
     setModoEdicion(true);
     setDiarioEditandoId(d.id);
@@ -111,7 +106,7 @@ function DiarioEmocionalPaciente() {
     setMsgOk("");
   }
 
-  // 🔹 Eliminar entrada
+  //  Eliminar entrada
   async function handleEliminar(id) {
     if (!window.confirm("¿Seguro que quieres eliminar esta entrada?")) return;
 

@@ -1,4 +1,3 @@
-// servicesPsicologos.js
 
 async function getPsicologos() {
     try {
@@ -18,8 +17,9 @@ async function getPsicologos() {
 
 export async function getDiariosPaciente(pacienteId) {
   const token =
-    localStorage.getItem("access_psicologo") ||
-    localStorage.getItem("access_token");
+  localStorage.getItem("access") ||
+  localStorage.getItem("access_psicologo") ||
+  localStorage.getItem("access_token");
 
   const res = await fetch(
     `http://127.0.0.1:8000/api/diario/?paciente_id=${pacienteId}`,

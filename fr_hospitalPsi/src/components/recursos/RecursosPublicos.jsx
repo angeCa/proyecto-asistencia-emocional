@@ -1,4 +1,3 @@
-// src/components/recursos/RecursosPublicos.jsx
 
 import { useEffect, useState } from "react";
 import ServicesRecursos from "../../services/ServicesRecursos";

@@ -13,6 +13,22 @@ function LoginGeneral() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
+  function parseJwt(token) {
+    try {
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join("")
+      );
+      return JSON.parse(jsonPayload);
+    } catch {
+      return null;
+    }
+  }
+
   async function ingresarInfo() {
     if (!correo.trim() || !contrasena.trim()) {
       Swal.fire("Error", "Debes ingresar correo y contraseña.", "error");
@@ -21,74 +37,61 @@ function LoginGeneral() {
 
     try {
       const data = await services_user.loginUsuario(correo, contrasena);
-      const { access, refresh, rol, id_usuario } = data;
+      console.log("✅ RESPUESTA LOGIN:", data);
 
-      if (!rol) {
-        console.warn("No vino 'rol' en la respuesta del login:", data);
+      const access = data?.access;
+      const refresh = data?.refresh;
+
+      if (!access || !refresh) {
+        throw new Error("El backend no devolvió tokens.");
       }
 
-      if (rol === "psicologo") {
-        localStorage.setItem("access_psicologo", access);
-        localStorage.setItem("refresh_psicologo", refresh);
-        localStorage.setItem("role_psicologo", rol);
-        localStorage.setItem("id_psicologo", id_usuario);
-      } else if (rol === "paciente") {
-        localStorage.setItem("access_paciente", access);
-        localStorage.setItem("refresh_paciente", refresh);
-        localStorage.setItem("role_paciente", rol);
-        localStorage.setItem("id_paciente", id_usuario);
-      } else if (rol === "admin") {
-        localStorage.setItem("access_admin", access);
-        localStorage.setItem("refresh_admin", refresh);
-        localStorage.setItem("role_admin", rol);
-        localStorage.setItem("id_admin", id_usuario);
-      }
+      // limpia local
       localStorage.clear();
+
+      //  Guarda tokens 
       localStorage.setItem("access", access);
       localStorage.setItem("refresh", refresh);
-      localStorage.setItem("rol", rol);
-      localStorage.setItem("id_usuario", id_usuario);
-      if (data.email) localStorage.setItem("email", data.email);
-      if (data.username) localStorage.setItem("username", data.username);
 
-      let destino = "/";
 
-      if (rol === "psicologo") {
-        destino = "/psicologo";        
-      } else if (rol === "paciente") {
-        destino = "/paciente";       
-      } else if (rol === "admin") {
-        destino = "/admin";           
-      } else {
-        destino = "/dashboard";  
-      }
+      const jwtPayload = parseJwt(access);
+      const id_usuario = data?.id_usuario ?? jwtPayload?.user_id;
+      if (id_usuario) localStorage.setItem("id_usuario", String(id_usuario));
+
+
+      const rol = data?.rol;
+      if (rol) localStorage.setItem("rol", rol);
+
+      // extras
+      if (data?.email) localStorage.setItem("email", data.email);
+      if (data?.username) localStorage.setItem("username", data.username);
+      //manda a una página segura (o dashboard general)
+      let destino = "/dashboard";
+      if (rol === "psicologo") destino = "/psicologo";
+      else if (rol === "paciente") destino = "/paciente";
+      else if (rol === "admin") destino = "/admin";
 
       Swal.fire({
         icon: "success",
         title: "Bienvenido",
         text: "Inicio de sesión exitoso.",
-      }).then(() => {
-        navigate(destino);
-      });
-
+      }).then(() => navigate(destino));
     } catch (error) {
-      Swal.fire("Error", "Credenciales incorrectas.", "error");
+      Swal.fire("Error", error?.message || "Credenciales incorrectas.", "error");
     }
   }
+
 
   return (
     <div>
       <NavBar />
 
       <div className="login-container">
-
         <div className="login-img">
           <img src={Limg} alt="imagen-login" />
           <div className="login-message">
             <h2>Nos alegra que más personas den el paso hacia el bienestar</h2>
-            <p>
-              Tu salud mental importa. Estamos aquí para acompañarte en cada momento.
-            </p>
+            <p>Tu salud mental importa. Estamos aquí para acompañarte en cada momento.</p>
           </div>
         </div>
 
@@ -113,25 +116,13 @@ function LoginGeneral() {
               onChange={(e) => setContrasena(e.target.value)}
               className="usuario"
             />
-
-            <button
-              type="button"
-              className="toggle-password"
-              onClick={() => setShowPassword(!showPassword)}
-            >
+            <button type="button" className="toggle-password" onClick={() => setShowPassword(!showPassword)}>
               {showPassword ? "Ocultar" : "Ver"}
             </button>
           </div>
 
-          <button onClick={ingresarInfo} className="boton-primario">
-            Iniciar Sesión
-          </button>
-          <button
-            onClick={() => navigate("/registro")}
-            className="boton-secundario"
-          >
-            No tengo cuenta
-          </button>
+          <button onClick={ingresarInfo} className="boton-primario">Iniciar Sesión</button>
+          <button onClick={() => navigate("/registro")} className="boton-secundario">No tengo cuenta</button>
         </div>
       </div>
 

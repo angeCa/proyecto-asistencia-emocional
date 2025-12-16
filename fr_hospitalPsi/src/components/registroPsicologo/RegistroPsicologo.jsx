@@ -27,14 +27,23 @@ function RegistroPsicologo() {
     e.preventDefault();
     if (!validarCampos()) return;
 
+    const correoLimpio = (correo || "").trim();
+
+    // Validación frontend (opcional pero correcta)
+    const correoValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correoLimpio);
+    if (!correoValido) {
+      Swal.fire("Error", "Ingresa un correo válido.", "error");
+      return;
+    }
+
     const formData = new FormData();
-    formData.append("nombre", nombre);
-    formData.append("apellido", apellido);
-    formData.append("correo", correo);
-    formData.append("telefono", telefono);
-    formData.append("direccion", direccion);
-    formData.append("especialidad", especialidad);
-    formData.append("titulo", titulo);
+    formData.append("nombre", nombre.trim());
+    formData.append("apellido", apellido.trim());
+    formData.append("correo", correoLimpio); // ✅ EXACTO como el modelo
+    formData.append("telefono", telefono.trim());
+    formData.append("direccion", (direccion || "").trim());
+    formData.append("especialidad", especialidad.trim());
+    formData.append("titulo", titulo.trim());
     if (cv) formData.append("cv", cv);
 
     try {
@@ -43,19 +52,24 @@ function RegistroPsicologo() {
       Swal.fire("Enviado", "Tu solicitud fue enviada al administrador", "success");
 
       setNombre("");
-      setApellido(""); setCorreo("");
-      setTelefono(""); setDireccion(""); setEspecialidad("");
-      setTitulo(""); setCv(null);
+      setApellido("");
+      setCorreo("");
+      setTelefono("");
+      setDireccion("");
+      setEspecialidad("");
+      setTitulo("");
+      setCv(null);
     } catch (error) {
       console.error("Error al crear solicitud:", error);
-      Swal.fire("Error", "Ocurrió un error al enviar la solicitud", "error");
+      Swal.fire("Error", error?.message || "Ocurrió un error al enviar la solicitud", "error");
     }
   };
 
-   return (
+
+  return (
     <div>
       <NavBar />
-      <div 
+      <div
         className="registro-psicologo-container"
       >
         <div className="registro-psicologo">

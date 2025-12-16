@@ -7,8 +7,6 @@ function AdminInvite() {
   const [codigo, setCodigo] = useState("");
   const [cargando, setCargando] = useState(false);
   const navigate = useNavigate();
-
-  // ⚠️ Solo para DEMO / proyecto
   const CODIGO_SECRETO = "SoloparaAdmin100";
 
   const handleSubmit = async (e) => {

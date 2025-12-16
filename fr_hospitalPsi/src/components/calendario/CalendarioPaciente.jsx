@@ -91,9 +91,10 @@ export default function CalendarioPaciente({ psicologoId }) {
         const lista = normalizarSlots(data);
         setHorarios(lista);
 
-        if (horarioSeleccionado && !lista.some((x) => x.time === horarioSeleccionado && x.available)) {
+        if (horarioSeleccionado && !lista.some((x) => x.value === horarioSeleccionado && x.available)) {
           setHorarioSeleccionado("");
         }
+
       } catch (error) {
         setHorarios([]);
         setHorarioSeleccionado("");

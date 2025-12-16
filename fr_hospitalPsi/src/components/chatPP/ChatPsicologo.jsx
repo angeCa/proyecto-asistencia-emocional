@@ -14,12 +14,10 @@ function ChatPsicologo({ otroUsuarioId, yoId, cerrarChat }) {
     } else {
       setMensajes([]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [otroUsuarioId]);
 
   useEffect(() => {
     scrollAbajo();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mensajes]);
 
   async function cargar() {

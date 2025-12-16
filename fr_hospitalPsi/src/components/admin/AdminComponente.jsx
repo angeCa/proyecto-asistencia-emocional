@@ -14,14 +14,9 @@ import "./AdminComponente.css";
 export default function AdminComponente() {
   const [solicitudes, setSolicitudes] = useState([]);
   const [psicologos, setPsicologos] = useState([]);
-
-  // 🔹 Pacientes + usuarios
   const [pacientes, setPacientes] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
-
-  // 🔹 Recursos
   const [recursos, setRecursos] = useState([]);
-
   const [showSolicitudes, setShowSolicitudes] = useState(false);
   const [showPendientes, setShowPendientes] = useState(false);
   const [showAprobados, setShowAprobados] = useState(false);
@@ -146,7 +141,7 @@ export default function AdminComponente() {
     setPacientes((prev) => prev.filter((p) => p.id !== id));
 
     try {
-      const ok = await ServicesPacientes.deletePaciente(id);
+      const ok = await ServicesPacientes.deletePacientes(id);
       if (ok) {
         Swal.fire("Eliminado", "Paciente eliminado", "success");
         cargarPacientesYUsuarios();
@@ -157,19 +152,33 @@ export default function AdminComponente() {
       Swal.fire("Error", "No se pudo eliminar", "error");
     }
   };
+  const getUserFromPaciente = (paciente) => {
+    if (!paciente) return null;
 
-  // Helpers para datos combinados
-  const getNombrePaciente = (paciente) => {
-    if (!paciente) return "Paciente sin usuario";
-    const user = usuarios.find((u) => u.id === paciente.usuario);
-    if (!user) return `Usuario #${paciente.usuario}`;
-    return `${user.first_name} ${user.last_name}`;
+    if (typeof paciente.usuario === "object" && paciente.usuario !== null) {
+      return paciente.usuario;
+    }
+
+    return usuarios.find((u) => u.id === paciente.usuario) || null;
   };
 
-  const getCorreoPaciente = (paciente) => {
-    const user = usuarios.find((u) => u.id === paciente.usuario);
-    return user?.email || "Sin correo";
+  const getUsernamePaciente = (paciente) => {
+    const user = getUserFromPaciente(paciente);
+    return user?.username || "Sin username";
   };
+
+  const getNombreCompletoPaciente = (paciente) => {
+    const user = getUserFromPaciente(paciente);
+    const nombre = `${user?.first_name || ""} ${user?.last_name || ""}`.trim();
+    return nombre || "Sin nombre";
+  };
+
+  const getIdUsuarioPaciente = (paciente) => {
+    const user = getUserFromPaciente(paciente);
+    return user?.id || "N/A";
+  };
+
+
 
   return (
     <div className="AppContainer">
@@ -179,7 +188,7 @@ export default function AdminComponente() {
         <div className="AdminSolicitudes">
           <h1>Panel de administración</h1>
 
-          {/* 🔹 Solicitudes de psicólogos */}
+          {/* Solicitudes de psicólogos */}
           <button
             className="btn-toggle-global"
             onClick={() => setShowSolicitudes(!showSolicitudes)}
@@ -321,7 +330,7 @@ export default function AdminComponente() {
             </div>
           )}
 
-          {/* 🔹 Pacientes */}
+          {/*  Pacientes */}
           <button
             className="btn-toggle-global"
             onClick={() => setShowPacientes(!showPacientes)}
@@ -344,29 +353,34 @@ export default function AdminComponente() {
                 ) : (
                   pacientes.map((p) => (
                     <div className="card" key={p.id}>
-                      <h3>{getNombrePaciente(p)}</h3>
+                      <h3>{getNombreCompletoPaciente(p)}</h3>
+
                       <p>
-                        <strong>Correo:</strong> {getCorreoPaciente(p)}
+                        <strong>Username:</strong> {getUsernamePaciente(p)}
                       </p>
+
+                      <p>
+                        <strong>ID usuario:</strong> {getIdUsuarioPaciente(p)}
+                      </p>
+
                       <p>
                         <strong>ID paciente:</strong> {p.id}
                       </p>
+
                       <div className="acciones">
-                        <button
-                          className="btn-delete"
-                          onClick={() => eliminarPaciente(p.id)}
-                        >
+                        <button className="btn-delete" onClick={() => eliminarPaciente(p.id)}>
                           Eliminar paciente
                         </button>
                       </div>
                     </div>
+
                   ))
                 )}
               </div>
             </div>
           )}
 
-          {/* 🔹 Recursos */}
+          {/* Recursos */}
           <button
             className="btn-toggle-global"
             onClick={() => setShowRecursos(!showRecursos)}

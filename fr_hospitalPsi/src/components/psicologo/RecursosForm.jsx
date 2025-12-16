@@ -1,4 +1,3 @@
-// src/components/psicologo/RecursoForm.jsx
 
 import { useState } from "react";
 import ServicesRecursos from "../../services/ServicesRecursos";

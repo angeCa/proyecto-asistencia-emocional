@@ -87,8 +87,6 @@ export default function ForoPage() {
   };
 
   const eliminarComentario = async (comentarioId) => {
-    // Lo dejo simple, sin confirm swal para que no metas otra lib extra aquí
-    // Si quieres, lo conectamos a Swal como el resto de tu proyecto.
     try {
       await ServicesForo.deleteComentario(comentarioId);
       if (postActivo) await cargarComentarios(postActivo.id);
@@ -115,7 +113,6 @@ export default function ForoPage() {
         {mensaje && <p className="mensaje-info">{mensaje}</p>}
 
         <div className="foro-grid">
-          {/* PANEL IZQ: crear post + lista */}
           <div className="foro-panel">
             <h3>Publicar</h3>
 
@@ -155,7 +152,7 @@ export default function ForoPage() {
             </div>
           </div>
 
-          {/* PANEL DER: comentarios */}
+          {/* PANEL: comentarios */}
           <div className="foro-panel">
             {!postActivo ? (
               <p className="texto-secundario">Selecciona un tema para ver comentarios.</p>
@@ -190,9 +187,6 @@ export default function ForoPage() {
                         <button className="btn-like" onClick={() => toggleLike(c.id)}>
                           👍 {c.likes_count ?? 0}
                         </button>
-
-                        {/* El backend decide si puede eliminar (autor o admin).
-                           Si no puede, te va a devolver 403 y lo mostramos en mensaje. */}
                         <button
                           className="btn-delete"
                           onClick={() => eliminarComentario(c.id)}

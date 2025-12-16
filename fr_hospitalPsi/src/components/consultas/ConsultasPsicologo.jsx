@@ -117,7 +117,6 @@ export default function ConsultasPsicologo() {
           const puedeAprobar = c.estado === "pendiente";
           const puedeCompletar = c.estado === "confirmada";
 
-          // ✅ Evita "Objects are not valid as a React child"
           const pacienteLabel =
             typeof c.paciente === "object" && c.paciente !== null
               ? (

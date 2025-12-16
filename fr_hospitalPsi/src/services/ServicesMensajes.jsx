@@ -1,41 +1,57 @@
+// src/services/ServicesMensajes.jsx
+// Servicio unificado para chat (conversación + lista de chats + enviar mensaje)
+
+const API_URL = "http://127.0.0.1:8000/api";
+
+// ✅ Siempre usamos el mismo access token que guarda tu Login (localStorage.setItem('access', ...))
 function getToken() {
   return (
     localStorage.getItem("access") ||
     localStorage.getItem("access_paciente") ||
     localStorage.getItem("access_psicologo") ||
     localStorage.getItem("access_admin") ||
-    localStorage.getItem("token")
+    localStorage.getItem("access_token") ||
+    localStorage.getItem("token") ||
+    ""
   );
 }
 
-export async function getConversacion(otroId) {
+async function safeJson(res) {
+  try {
+    return await res.json();
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * GET conversación con otro usuario.
+ * Backend: /api/mensajes/conversacion/<id>/
+ */
+export async function getConversacion(otroUsuarioId) {
   const token = getToken();
 
-  const response = await fetch(
-    `http://127.0.0.1:8000/api/mensajes/conversacion/${otroId}/`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    }
-  );
+  const res = await fetch(`${API_URL}/mensajes/conversacion/${otroUsuarioId}/`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    // aquí normalmente viene {detail: "..."} y eso te explotaba el map
-    throw new Error(data?.detail || "No se pudo cargar la conversación.");
-  }
-
+  const data = await safeJson(res);
+  if (!res.ok) throw new Error(data?.detail || "No se pudo cargar la conversación.");
   return data;
 }
 
+/**
+ * POST enviar mensaje.
+ * Backend: /api/mensajes/
+ */
 export async function postMensaje(payload) {
   const token = getToken();
 
-  const response = await fetch("http://127.0.0.1:8000/api/mensajes/", {
+  const res = await fetch(`${API_URL}/mensajes/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -44,39 +60,28 @@ export async function postMensaje(payload) {
     body: JSON.stringify(payload),
   });
 
-  const data = await response.json();
-  if (!response.ok) throw new Error(data?.detail || "No se pudo enviar el mensaje.");
+  const data = await safeJson(res);
+  if (!res.ok) throw new Error(data?.detail || "No se pudo enviar el mensaje.");
   return data;
 }
 
-
-export async function getConversacion(otroUsuarioId) {
-const access = localStorage.getItem("access") || localStorage.getItem("access_token")  || localStorage.getItem("token");
-
-
-  const response = await fetch(
-    `http://127.0.0.1:8000/api/mensajes/conversacion/${otroUsuarioId}/`,
-    {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${access}`,
-        "Content-Type": "application/json",
-      }
-    }
-  );
-
-  return await response.json();
-}
+/**
+ * GET lista de chats (últimas conversaciones).
+ * Backend: /api/mensajes/mis-chats/
+ * ❌ Antes estabas llamando /mis_chats/ (underscore) y eso daba 404.
+ */
 export async function getMisChats() {
-const access = localStorage.getItem("access") || localStorage.getItem("access_token")  || localStorage.getItem("token");
+  const token = getToken();
 
-  const response = await fetch("http://127.0.0.1:8000/api/mensajes/mis_chats/", {
+  const res = await fetch(`${API_URL}/mensajes/mis-chats/`, {
     method: "GET",
     headers: {
-      "Authorization": `Bearer ${access}`,
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
 
-  return await response.json();
+  const data = await safeJson(res);
+  if (!res.ok) throw new Error(data?.detail || "No se pudo cargar la lista de chats.");
+  return data;
 }

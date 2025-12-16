@@ -11,12 +11,10 @@ function ChatPaciente({ otroUsuarioId, yoId }) {
   useEffect(() => {
     if (otroUsuarioId) cargar();
     else setMensajes([]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [otroUsuarioId]);
 
   useEffect(() => {
     scrollAbajo();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mensajes]);
 
   const cargar = async () => {
@@ -25,7 +23,6 @@ function ChatPaciente({ otroUsuarioId, yoId }) {
       const data = await getConversacion(otroUsuarioId);
       console.log("Mensajes Paciente:", data);
 
-      // ✅ solo arrays
       setMensajes(Array.isArray(data) ? data : []);
     } catch (e) {
       setMensajes([]);
